@@ -1,5 +1,6 @@
 package org.skife.galaxy.cli;
 
+import com.google.common.base.Preconditions;
 import org.eclipse.jetty.server.DispatcherType;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.servlet.ServletContextHandler;
@@ -23,9 +24,11 @@ public class AgentCommand implements SculptorCommand
 
     public void execute() throws Exception
     {
-        root.mkdirs();
-        Server server = new Server(port);
+        if (!root.exists() && root.isDirectory()) {
+            Preconditions.checkState(root.mkdirs(), "unable to create agent root directory %s", root.getAbsolutePath());
+        }
 
+        Server server = new Server(port);
         ServletContextHandler handler = new ServletContextHandler(ServletContextHandler.NO_SESSIONS);
         handler.addEventListener(new GuiceServletConfig(root));
         handler.addFilter(com.google.inject.servlet.GuiceFilter.class, "/*", EnumSet.allOf(DispatcherType.class));
