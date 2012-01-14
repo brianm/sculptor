@@ -12,14 +12,13 @@ import org.skife.galaxy.http.NotFoundServlet;
 import java.io.File;
 import java.util.EnumSet;
 
-@Command(name = "agent")
+@Command(name = "agent", description = "Run the agent")
 public class AgentCommand implements SculptorCommand
 {
-
-    @Option(options = {"-r", "--root"}, required = true)
+    @Option(options = {"-r", "--root"}, required = true, description = "Root directory for deployment slots")
     public File root;
 
-    @Option(options={"-p", "--port"})
+    @Option(options={"-p", "--port"}, description = "Port for HTTP server, default is 25365")
     public int port = 25365;
 
     public void execute() throws Exception
