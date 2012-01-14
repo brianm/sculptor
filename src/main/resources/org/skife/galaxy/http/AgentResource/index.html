@@ -1,0 +1,64 @@
+{{< layout:page }}
+{{$body}}
+<!--  {{agent.root}} -->
+<div class="page-header">
+    <h1>{{hostname}} ({{ip}})</h1>
+</div>
+<div class="row">
+    <div class="span2">
+        <h4>Slots ({{slots.size}})</h4>
+    </div>
+    <div class="span14">
+        <table>
+            {{#slots}}
+            <tr class="{{#slot.running}}green-bg{{/slot.running}} {{#slot.stopped}}red-bg{{/slot.stopped}}">
+                <td><a href="/slot/{{uuid}}">{{slot.name}}</a></td><td><a href="/slot/{{uuid}}">{{uuid}}</a></td>
+            </tr>
+            {{/slots}}
+        </table>
+    </div>
+</div>
+<div class="row">
+    <div class="span2">
+        <h4>Root</h4>
+    </div>
+    <div class="span14"><h5>{{agent.root}}</h5></div>
+</div>
+<div class="row">
+    <div class="span16">
+        <div class="row">
+            <div class="span2">
+                <h4>Deploy</h4>
+            </div>
+            <div class="span14">
+                <form action="/deploy" method="post">
+                    <fieldset>
+                        <div class="clearfix">
+                            <label for="deploy-name">Name</label>
+
+                            <div class="input">
+                                <input value="Echo Service"
+                                       type="text" class="span3" id="deploy-name" name="name"/>
+                            </div>
+                        </div>
+                        <div class="clearfix">
+                            <label for="deploy-url">Bundle URL</label>
+
+                            <div class="input">
+                                <input value="file:///Users/brianm/src/sculptor/src/test/resources/echo.tar.gz"
+                                       type="text" class="span11" id="deploy-url" name="url"/>
+                            </div>
+                        </div>
+                        <div class="actions">
+                            <input type="submit" class="btn primary span2" value="Deploy!"/>
+                            <button type="reset" class="btn">Cancel</button>
+                        </div>
+                    </fieldset>
+
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{{/body}}
+{{/ layout:page }}

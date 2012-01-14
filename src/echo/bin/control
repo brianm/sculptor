@@ -1,0 +1,26 @@
+#!/bin/bash
+
+DIR="$( cd -P "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+
+case $1 in
+    start)
+        touch $DIR/../running
+        ;;
+    stop)
+        rm $DIR/../running
+        ;;
+    restart)
+        rm $DIR/../running
+        touch $DIR/../running
+        ;;
+    status)
+        if [ -f $DIR/../running ]
+        then
+            exit 0
+        fi
+        exit 3
+        ;;
+    version)
+        echo "galaxy-spec-1.0.0"
+        ;;
+esac

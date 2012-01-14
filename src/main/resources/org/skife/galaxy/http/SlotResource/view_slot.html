@@ -1,0 +1,67 @@
+{{< layout:page }}
+{{$body}}
+<div class="page-header">
+    <h1>{{slot.name}} {{slot.uuid}}</h1>
+</div>
+
+<div class="row">
+    <div class="span2">
+        <h4>Status</h4>
+    </div>
+    <div class="span14">
+        <div class="alert-message block-message span12 {{#slot.running}}success{{/slot.running}} {{#slot.stopped}}error{{/slot.stopped}} {{#slot.confused}}warning{{/slot.confused}}">
+            <h1>{{status.message}}</h1>
+        </div>
+    </div>
+</div>
+<div class="row">
+    <div class="span2">
+        <h4>Actions</h4>
+    </div>
+    <div class="span2">
+        <form action="{{start}}" method="post">
+            <input class="btn success span2" type="submit" value="Start"/>
+        </form>
+    </div>
+    <div class="span2">
+        <form action="{{stop}}" method="post">
+            <input class="btn danger span2" type="submit" value="Stop"/>
+        </form>
+    </div>
+    <div class="span2">
+        <form action="{{restart}}" method="post">
+            <input class="btn primary span2" type="submit" value="Restart"/>
+        </form>
+    </div>
+    <div class="offset4 span2">
+        <form action="{{clear}}" method="post">
+            <input class="btn error span2" type="submit" value="Clear"/>
+        </form>
+    </div>
+</div>
+<div class="row">
+    <div class="span2">
+        <h4>Name</h4>
+    </div>
+    <div class="span14">
+        <h5>{{slot.name}}</h5>
+    </div>
+</div>
+<div class="row">
+    <div class="span2">
+        <h4>ID</h4>
+    </div>
+    <div class="span14">
+        <h5>{{slot.uuid}}</h5>
+    </div>
+</div>
+<div class="row">
+    <div class="span2">
+        <h4>Directory</h4>
+    </div>
+    <div class="span14">
+        <h5>{{slot.deployDir.absolutePath}}</h5>
+    </div>
+</div>
+{{/body}}
+{{/ layout:page }}
