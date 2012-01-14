@@ -6,14 +6,22 @@ import com.google.inject.Stage;
 import com.google.inject.servlet.GuiceServletContextListener;
 import com.sun.jersey.guice.JerseyServletModule;
 
+import javax.servlet.ServletContextEvent;
 import java.io.File;
 
 public class GuiceServletConfig extends GuiceServletContextListener
 {
-    private final File     agentRoot;
+    private final File agentRoot;
 
-    public GuiceServletConfig(File agentRoot) {
+    public GuiceServletConfig(File agentRoot)
+    {
         this.agentRoot = agentRoot;
+    }
+
+    @Override
+    public void contextInitialized(ServletContextEvent servletContextEvent)
+    {
+        super.contextInitialized(servletContextEvent);
     }
 
     @Override
