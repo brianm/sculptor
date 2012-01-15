@@ -1,5 +1,6 @@
 package org.skife.galaxy.http;
 
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.sun.jersey.api.view.Viewable;
 import org.skife.galaxy.Agent;
@@ -12,7 +13,10 @@ import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
+import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.UriInfo;
+import java.io.File;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.URI;
@@ -22,19 +26,54 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+import static java.lang.String.format;
+import static java.util.Arrays.asList;
+
 @Path("/")
 public class AgentResource
 {
-    private final Agent agent;
+    private final UriInfo ui;
+    private final Agent   agent;
 
     @Inject
-    public AgentResource(Agent agent)
+    public AgentResource(UriInfo ui, Agent agent)
     {
+        this.ui = ui;
         this.agent = agent;
     }
 
     @GET
-    @Produces("text/html")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response indexJson()
+    {
+        return explicitJson();
+    }
+
+    @GET
+    @Produces(MediaType.APPLICATION_JSON)
+    @Path("index.json")
+    public Response explicitJson()
+    {
+        final URI authoritative = ui.getAbsolutePathBuilder().path(AgentResource.class, "explicitJson").build();
+        final URI deploy = ui.getAbsolutePathBuilder().path(AgentResource.class, "deploy").build();
+        final List<Action> acts = asList(new Action("deploy", "POST", deploy,
+                                                    ImmutableMap.of("name", "Service name",
+                                                                    "url", "Deployment bundle URL")));
+        final Link json_link = new Link("alternate", authoritative, "JSON URL");
+        return Response.ok()
+                       .header("Link", json_link.toString())
+                       .entity(new Object()
+                       {
+                           public final File root = agent.getRoot();
+                           public final List<SlotDescription> slots = describe(agent.getSlots());
+                           public final List<Action> _actions = acts;
+                           public final List<Link> _links = asList(json_link);
+                       })
+                       .build();
+    }
+
+    @GET
+    @Produces(MediaType.TEXT_HTML)
     public Viewable index() throws UnknownHostException
     {
         final Map<UUID, Slot> raw_slots = agent.getSlots();
@@ -50,11 +89,11 @@ public class AgentResource
 
     @POST
     @Path("/deploy")
-    public Response deploy(@FormParam("name") String name,  @FormParam("url") URL tarball) throws IOException
+    public Response deploy(@FormParam("name") String name, @FormParam("url") URL tarball) throws IOException
     {
         final Slot s = agent.deploy(new Deployment(name, tarball));
 
-        final URI slot_uri = URI.create("/slot/" + s.getUuid().toString());
+        final URI slot_uri = URI.create("/slot/" + s.getId().toString());
         return Response.created(slot_uri)
                        .location(slot_uri)
                        .entity(new Viewable("slot_created.html", new Object()
@@ -68,20 +107,33 @@ public class AgentResource
     {
         List<SlotDescription> rs = Lists.newArrayList();
         for (Map.Entry<UUID, Slot> entry : raw_slots.entrySet()) {
-            rs.add(new SlotDescription(entry.getKey(), entry.getValue()));
+            rs.add(new SlotDescription(entry.getValue(),
+                                       ui));
         }
         return rs;
     }
 
     private static class SlotDescription
     {
-        final UUID uuid;
         final Slot slot;
+        final List<Link> _links;
 
-        SlotDescription(UUID uuid, Slot slot)
+        SlotDescription(Slot slot, UriInfo ui)
         {
-            this.uuid = uuid;
             this.slot = slot;
+            _links = asList(new Link("self",
+                                     ui.getAbsolutePathBuilder().path(SlotResource.class).build(slot.getId()),
+                                     "slot resource"));
+        }
+
+        public List<Link> get_links()
+        {
+            return _links;
+        }
+
+        public Slot getSlot()
+        {
+            return slot;
         }
     }
 }

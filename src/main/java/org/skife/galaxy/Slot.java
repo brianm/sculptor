@@ -17,7 +17,7 @@ public class Slot
     private final String name;
     private final File root;
     private final File deployDir;
-    private final UUID uuid;
+    private final UUID id;
 
     private static final String KEY = "key";
 
@@ -35,7 +35,7 @@ public class Slot
 
     public Slot(UUID uuid, String name, File path) throws IOException
     {
-        this.uuid = uuid;
+        this.id = uuid;
         this.name = name;
         this.root = path;
         this.deployDir = new File(path, "deploy");
@@ -173,14 +173,11 @@ public class Slot
 
     public boolean isConfused()
     {
-        return isRunning() || isStopped();
+        return !isRunning() && !isStopped();
     }
 
-    public UUID getUuid()
+    public UUID getId()
     {
-        return uuid;
+        return id;
     }
-
-
-
 }

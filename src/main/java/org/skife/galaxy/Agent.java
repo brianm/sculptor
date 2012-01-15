@@ -34,7 +34,7 @@ public class Agent
         for (File path : root.listFiles()  ) {
             if (path.isDirectory()) {
                 Slot slot = Slot.from(path);
-                slots.put(slot.getUuid(), slot);
+                slots.put(slot.getId(), slot);
             }
         }
     }

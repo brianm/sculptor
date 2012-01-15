@@ -12,7 +12,7 @@
         <table>
             {{#slots}}
             <tr class="{{#slot.running}}green-bg{{/slot.running}} {{#slot.stopped}}red-bg{{/slot.stopped}}">
-                <td><a href="/slot/{{uuid}}">{{slot.name}}</a></td><td><a href="/slot/{{uuid}}">{{uuid}}</a></td>
+                <td><a href="/slot/{{slot.id}}">{{slot.name}}</a></td><td><a href="/slot/{{slot.id}}">{{slot.id}}</a></td>
             </tr>
             {{/slots}}
         </table>

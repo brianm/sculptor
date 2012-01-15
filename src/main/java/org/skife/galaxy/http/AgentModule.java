@@ -1,9 +1,16 @@
 package org.skife.galaxy.http;
 
+import com.google.inject.Provides;
 import com.google.inject.Scopes;
+import com.google.inject.Singleton;
 import com.google.inject.servlet.ServletModule;
 import com.sun.jersey.guice.spi.container.servlet.GuiceContainer;
+import org.codehaus.jackson.jaxrs.JacksonJsonProvider;
+import org.codehaus.jackson.map.ObjectMapper;
+import org.codehaus.jackson.map.SerializationConfig;
 import org.skife.galaxy.Agent;
+
+import javax.inject.Scope;
 
 public class AgentModule extends ServletModule
 {
@@ -25,5 +32,14 @@ public class AgentModule extends ServletModule
         // jersey components
         bind(MustacheTemplateProcessor.class).in(Scopes.SINGLETON);
         bind(String.class).annotatedWith(TemplateRoot.class).toInstance("templates");
+    }
+
+    @Provides
+    @Singleton
+    public JacksonJsonProvider jacksonProvider()
+    {
+        ObjectMapper mapper = new ObjectMapper();
+        mapper.configure(SerializationConfig.Feature.INDENT_OUTPUT, true);
+        return new JacksonJsonProvider(mapper);
     }
 }
