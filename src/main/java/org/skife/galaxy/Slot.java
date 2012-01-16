@@ -40,19 +40,19 @@ public class Slot
                                                                    });
 
     public Slot(UUID uuid,
-                URI bundleSource,
+                URI bundle,
                 String name,
                 File path) throws IOException
     {
         this.id = uuid;
-        this.bundleUrl = bundleSource;
+        this.bundleUrl = bundle;
         this.name = name;
         this.root = path;
         this.deployDir = new File(path, "deploy");
 
         Files.write(uuid.toString(), new File(root, "uuid"), Charsets.UTF_8);
-        Files.write(uuid.toString(), new File(root, "uuid"), Charsets.UTF_8);
-        Files.write(bundleSource.toString(), new File(root, "bundle_source"), Charsets.UTF_8);
+        Files.write(name, new File(root, "name"), Charsets.UTF_8);
+        Files.write(bundle.toString(), new File(root, "bundle_source"), Charsets.UTF_8);
     }
 
     public File getDeployDir()

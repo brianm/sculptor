@@ -3,6 +3,7 @@ package org.skife.galaxy.http;
 import org.codehaus.jackson.annotate.JsonProperty;
 
 import java.net.URI;
+import java.util.Collections;
 import java.util.Map;
 
 public class Action
@@ -21,6 +22,11 @@ public class Action
         this.method = method;
         this.uri = uri;
         this.params = params;
+    }
+
+    public Action(String start, String post, URI start_uri)
+    {
+        this(start, post, start_uri, Collections.<String, String>emptyMap());
     }
 
     public Map<String, String> getParams()

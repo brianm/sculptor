@@ -22,7 +22,6 @@ import java.io.File;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.URI;
-import java.net.URL;
 import java.net.UnknownHostException;
 import java.util.List;
 import java.util.Map;
@@ -134,36 +133,6 @@ public class AgentResource
                                        ui));
         }
         return rs;
-    }
-
-    private static class SlotDescription
-    {
-        final Slot       slot;
-        final List<Link> _links;
-
-        SlotDescription(Slot slot, UriInfo ui)
-        {
-            this.slot = slot;
-            final URI slot_uri = UriBuilder.fromResource(SlotResource.class)
-                                           .host(ui.getRequestUri().getHost())
-                                           .port(ui.getRequestUri().getPort())
-                                           .scheme(ui.getRequestUri().getScheme())
-                                           .build(slot.getId());
-
-            _links = asList(new Link("self",
-                                     slot_uri,
-                                     "slot resource"));
-        }
-
-        public List<Link> get_links()
-        {
-            return _links;
-        }
-
-        public Slot getSlot()
-        {
-            return slot;
-        }
     }
 
     public static class DeployJson
