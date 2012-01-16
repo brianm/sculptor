@@ -1,23 +1,29 @@
 package org.skife.galaxy;
 
 import com.google.common.base.Charsets;
+import com.google.common.base.Preconditions;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import com.google.common.io.Files;
+import com.google.common.io.InputSupplier;
 import org.apache.commons.io.FileUtils;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
+import java.net.URI;
+import java.net.URL;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
 public class Slot
 {
+    private final URI    bundleUrl;
     private final String name;
-    private final File root;
-    private final File deployDir;
-    private final UUID id;
+    private final File   root;
+    private final File   deployDir;
+    private final UUID   id;
 
     private static final String KEY = "key";
 
@@ -33,15 +39,20 @@ public class Slot
                                                                        }
                                                                    });
 
-    public Slot(UUID uuid, String name, File path) throws IOException
+    public Slot(UUID uuid,
+                URI bundleSource,
+                String name,
+                File path) throws IOException
     {
         this.id = uuid;
+        this.bundleUrl = bundleSource;
         this.name = name;
         this.root = path;
         this.deployDir = new File(path, "deploy");
 
         Files.write(uuid.toString(), new File(root, "uuid"), Charsets.UTF_8);
-        Files.write(name, new File(root, "name"), Charsets.UTF_8);
+        Files.write(uuid.toString(), new File(root, "uuid"), Charsets.UTF_8);
+        Files.write(bundleSource.toString(), new File(root, "bundle_source"), Charsets.UTF_8);
     }
 
     public File getDeployDir()
@@ -60,11 +71,54 @@ public class Slot
         return String.format("<Slot %s>", root);
     }
 
+    public static Slot deploy(File root, Deployment d) throws IOException
+    {
+        UUID uuid = UUID.randomUUID();
+        File deployment_dir = new File(root, uuid.toString());
+        Preconditions.checkState(deployment_dir.mkdirs(), "Unable to create deployment directory");
+        File tmp_tarball = File.createTempFile("pleides", ".tar.gz");
+
+        final URL url = d.getTarballUrl().toURL();
+        Files.copy(new InputSupplier<InputStream>()
+        {
+            public InputStream getInput() throws IOException
+            {
+                return url.openStream();
+            }
+        }, tmp_tarball);
+
+        File tmp = Files.createTempDir();
+        Command c = new Command("tar",
+                                "-C", tmp.getAbsolutePath(),
+                                "-xf", tmp_tarball.getAbsolutePath())
+            .setTimeLimit(10, TimeUnit.SECONDS);
+        int out = c.execute(Agent.EXEC_POOL);
+
+        Preconditions.checkState(out == 0);
+
+        Preconditions.checkState(tmp.listFiles().length == 1, "Too many directories in root of expanded tarball");
+        File dir = tmp.listFiles()[0];
+
+        Files.move(dir, new File(deployment_dir, "deploy"));
+
+        return new Slot(uuid, d.getTarballUrl(), d.getName(), deployment_dir);
+
+    }
+
     public static Slot from(File root) throws IOException
     {
         String name = Files.readFirstLine(new File(root, "name"), Charsets.UTF_8);
         String uuid_s = Files.readFirstLine(new File(root, "uuid"), Charsets.UTF_8);
-        return new Slot(UUID.fromString(uuid_s), name, root);
+        String bundle_source = Files.readFirstLine(new File(root, "bundle_source"), Charsets.UTF_8);
+        return new Slot(UUID.fromString(uuid_s),
+                        URI.create(bundle_source),
+                        name,
+                        root);
+    }
+
+    public URI getBundleUrl()
+    {
+        return bundleUrl;
     }
 
     public File getRoot()

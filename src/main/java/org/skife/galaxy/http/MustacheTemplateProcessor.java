@@ -13,6 +13,7 @@ import com.sampullara.mustache.MustacheException;
 import com.sampullara.mustache.Scope;
 import com.sun.jersey.api.view.Viewable;
 import com.sun.jersey.spi.template.ViewProcessor;
+import org.skife.galaxy.cli.GlobalOptions;
 
 import javax.inject.Inject;
 import javax.ws.rs.ext.Provider;
@@ -29,10 +30,12 @@ public class MustacheTemplateProcessor implements ViewProcessor<Mustache>
 {
     private final LoadingCache<String, Mustache> templates;
     private final ImmutableMap<String, String> prefixes = ImmutableMap.of("layout", "org/skife/galaxy/http/");
+    private final GlobalOptions flags;
 
-    public MustacheTemplateProcessor()
+    @Inject
+    public MustacheTemplateProcessor(GlobalOptions flags)
     {
-
+        this.flags = flags;
         templates = CacheBuilder.newBuilder()
                                 .build(new MustacheCacheLoader(prefixes));
     }
@@ -40,13 +43,18 @@ public class MustacheTemplateProcessor implements ViewProcessor<Mustache>
     @Override
     public Mustache resolve(String name)
     {
-        //        return templates.getUnchecked(name);
-        try {
-            return new MustacheCacheLoader(prefixes).load(name);
+        if (flags.debug) {
+            try {
+                return new MustacheCacheLoader(prefixes).load(name);
+            }
+            catch (Exception e) {
+                throw Throwables.propagate(e);
+            }
         }
-        catch (Exception e) {
-            throw Throwables.propagate(e);
+        else {
+            return templates.getUnchecked(name);
         }
+
 
     }
 

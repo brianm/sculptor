@@ -8,6 +8,7 @@ import org.skife.galaxy.Deployment;
 import org.skife.galaxy.Slot;
 
 import javax.inject.Inject;
+import javax.ws.rs.Consumes;
 import javax.ws.rs.FormParam;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
@@ -15,6 +16,7 @@ import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.UriBuilder;
 import javax.ws.rs.core.UriInfo;
 import java.io.File;
 import java.io.IOException;
@@ -88,12 +90,16 @@ public class AgentResource
     }
 
     @POST
-    @Path("/deploy")
-    public Response deploy(@FormParam("name") String name, @FormParam("url") URL tarball) throws IOException
+    @Path("deploy")
+    @Produces(MediaType.TEXT_HTML)
+    public Response deploy(@FormParam("name") String name, @FormParam("url") URI tarball) throws IOException
     {
         final Slot s = agent.deploy(new Deployment(name, tarball));
-
-        final URI slot_uri = URI.create("/slot/" + s.getId().toString());
+        final URI slot_uri = UriBuilder.fromResource(SlotResource.class)
+                                       .host(ui.getRequestUri().getHost())
+                                       .port(ui.getRequestUri().getPort())
+                                       .scheme(ui.getRequestUri().getScheme())
+                                       .build(s.getId());
         return Response.created(slot_uri)
                        .location(slot_uri)
                        .entity(new Viewable("slot_created.html", new Object()
@@ -101,6 +107,23 @@ public class AgentResource
                            URI uri = slot_uri;
                        }))
                        .build();
+    }
+
+    @POST
+    @Path("deploy")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response deployJson(DeployJson json) throws IOException
+    {
+        final Slot s = agent.deploy(new Deployment(json.name, json.url));
+        final URI slot_uri = UriBuilder.fromResource(SlotResource.class)
+                                       .host(ui.getRequestUri().getHost())
+                                       .port(ui.getRequestUri().getPort())
+                                       .scheme(ui.getRequestUri().getScheme())
+                                       .build(s.getId());
+
+        return Response.created(slot_uri)
+                       .entity(new SlotDescription(s, ui)).build();
     }
 
     private List<SlotDescription> describe(Map<UUID, Slot> raw_slots)
@@ -115,14 +138,20 @@ public class AgentResource
 
     private static class SlotDescription
     {
-        final Slot slot;
+        final Slot       slot;
         final List<Link> _links;
 
         SlotDescription(Slot slot, UriInfo ui)
         {
             this.slot = slot;
+            final URI slot_uri = UriBuilder.fromResource(SlotResource.class)
+                                           .host(ui.getRequestUri().getHost())
+                                           .port(ui.getRequestUri().getPort())
+                                           .scheme(ui.getRequestUri().getScheme())
+                                           .build(slot.getId());
+
             _links = asList(new Link("self",
-                                     ui.getAbsolutePathBuilder().path(SlotResource.class).build(slot.getId()),
+                                     slot_uri,
                                      "slot resource"));
         }
 
@@ -135,5 +164,11 @@ public class AgentResource
         {
             return slot;
         }
+    }
+
+    public static class DeployJson
+    {
+        public URI    url;
+        public String name;
     }
 }

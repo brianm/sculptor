@@ -6,7 +6,9 @@ import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.iq80.cli.Command;
 import org.iq80.cli.Option;
-import org.skife.galaxy.http.GuiceServletConfig;
+import org.iq80.cli.Options;
+import org.iq80.cli.OptionsType;
+import org.skife.galaxy.http.GuiceAgentServletModule;
 import org.skife.galaxy.http.NotFoundServlet;
 
 import java.io.File;
@@ -21,6 +23,9 @@ public class AgentCommand implements SculptorCommand
     @Option(options={"-p", "--port"}, description = "Port for HTTP server, default is 25365")
     public int port = 25365;
 
+    @Options(OptionsType.GLOBAL)
+    public GlobalOptions global;
+
     public void execute() throws Exception
     {
         if (!root.exists() && root.isDirectory()) {
@@ -29,7 +34,7 @@ public class AgentCommand implements SculptorCommand
 
         Server server = new Server(port);
         ServletContextHandler handler = new ServletContextHandler(ServletContextHandler.NO_SESSIONS);
-        handler.addEventListener(new GuiceServletConfig(root));
+        handler.addEventListener(new GuiceAgentServletModule(root, global));
         handler.addFilter(com.google.inject.servlet.GuiceFilter.class, "/*", EnumSet.allOf(DispatcherType.class));
         handler.addServlet(NotFoundServlet.class, "/*");
         server.setHandler(handler);

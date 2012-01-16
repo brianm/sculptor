@@ -1,19 +1,19 @@
 package org.skife.galaxy;
 
-import java.net.URL;
+import java.net.URI;
 
 public class Deployment
 {
     private final String name;
-    private final URL tarball;
+    private final URI tarball;
 
-    public Deployment(String name, URL tarball)
+    public Deployment(String name, URI tarball)
     {
         this.name = name;
         this.tarball = tarball;
     }
 
-    public URL getTarballUrl()
+    public URI getTarballUrl()
     {
         return tarball;
     }

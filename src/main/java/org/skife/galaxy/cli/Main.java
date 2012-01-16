@@ -20,6 +20,7 @@ public class Main
         GitLikeCommandParser.builder("sculptor")
                                      .withCommandType(SculptorCommand.class)
                                      .addCommand(AgentCommand.class)
+                                     .addCommand(DeployCommand.class)
                                      .build()
                                      .parse(args)
                                      .execute();

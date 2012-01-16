@@ -28,7 +28,7 @@ public class AgentTest
         agent = new Agent(tempDir);
 
         File tarball = new File("src/test/resources/echo.tar.gz");
-        Deployment d = new Deployment("test", tarball.toURI().toURL());
+        Deployment d = new Deployment("test", tarball.toURI());
 
         s = agent.deploy(d);
 
