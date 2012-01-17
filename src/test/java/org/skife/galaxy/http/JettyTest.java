@@ -52,6 +52,7 @@ public class JettyTest
         server.start();
 
         String body = http.executeRequest(new RequestBuilder()
+                                              .setHeader("Accept", "text/html")
                                               .setUrl("http://localhost:25365/")
                                               .build()).get().getResponseBody();
 

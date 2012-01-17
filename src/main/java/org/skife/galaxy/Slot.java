@@ -71,7 +71,7 @@ public class Slot
         return String.format("<Slot %s>", root);
     }
 
-    public static Slot deploy(File root, Deployment d, ConcurrentMap<String, URI> envFiles) throws IOException
+    public static Slot deploy(File root, Deployment d, Map<String, URI> envFiles) throws IOException
     {
         UUID uuid = UUID.randomUUID();
         File deployment_dir = new File(root, uuid.toString());
