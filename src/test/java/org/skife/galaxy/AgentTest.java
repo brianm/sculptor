@@ -17,9 +17,9 @@ import static org.skife.galaxy.TestingHelpers.file;
 
 public class AgentTest
 {
-    private File  tempDir;
-    private Slot  s;
-    private Agent agent;
+    private File       tempDir;
+    private Agent      agent;
+    private Deployment d;
 
     @Before
     public void setUp() throws Exception
@@ -28,9 +28,7 @@ public class AgentTest
         agent = new Agent(tempDir);
 
         File tarball = new File("src/test/resources/echo.tar.gz");
-        Deployment d = new Deployment("test", tarball.toURI());
-
-        s = agent.deploy(d);
+        d = new Deployment("test", tarball.toURI());
 
     }
 
@@ -43,6 +41,7 @@ public class AgentTest
     @Test
     public void testDeploy() throws Exception
     {
+        Slot s = agent.deploy(d);
         File deploy_dir = file(s.getRoot(), "deploy");
         assertThat(deploy_dir, exists());
         assertThat(file(deploy_dir, "bin"), exists());
@@ -52,6 +51,7 @@ public class AgentTest
     @Test
     public void testStart() throws Exception
     {
+        Slot s = agent.deploy(d);
         s.start();
         assertThat(file(s.getRoot(), "deploy", "running"), exists());
     }
@@ -59,6 +59,7 @@ public class AgentTest
     @Test
     public void testStop() throws Exception
     {
+        Slot s = agent.deploy(d);
         s.start();
         s.stop();
         assertThat(file(s.getRoot(), "deploy", "running"), not(exists()));
@@ -67,6 +68,7 @@ public class AgentTest
     @Test
     public void testStatusOnRunning() throws Exception
     {
+        Slot s = agent.deploy(d);
         s.start();
         Status status = s.status();
         assertThat(status, equalTo(Status.success("running")));
@@ -75,10 +77,22 @@ public class AgentTest
     @Test
     public void testStatusOnStopped() throws Exception
     {
+        Slot s = agent.deploy(d);
         s.start();
         s.stop();
         Status status = s.status();
         assertThat(status, equalTo(Status.success("stopped")));
+    }
+
+    @Test
+    public void testEnvConfig() throws Exception
+    {
+        File cfg = new File("src/test/resources/some_config.properties");
+        agent.addEnvironmentConfiguration("/env/runtime.properties", cfg.toURI());
+
+        Slot s = agent.deploy(d);
+        File deployed = file(s.getDeployDir(), "env", "runtime.properties");
+        assertThat(deployed, exists());
     }
 
 }

@@ -67,6 +67,7 @@ public class AgentResource
                        {
                            public final File root = agent.getRoot();
                            public final List<SlotDescription> slots = describe(agent.getSlots());
+                           public final Map<String, URI> environment = agent.getEnvironmentConfig();
                            public final List<Action> _actions = acts;
                            public final List<Link> _links = asList(json_link);
                        })
@@ -85,7 +86,18 @@ public class AgentResource
             String hostname = InetAddress.getLocalHost().getHostName();
             String ip = InetAddress.getLocalHost().getHostAddress();
             List<SlotDescription> slots = describe(raw_slots);
+            List<EnvDescription> environment = describeEnv(agent.getEnvironmentConfig());
         });
+    }
+
+    @POST
+    @Path("environment")
+    @Produces(MediaType.TEXT_HTML)
+    public Response environment(@FormParam("path") String path, @FormParam("url") URI url)
+    {
+        agent.addEnvironmentConfiguration(path, url);
+        URI redirect = UriBuilder.fromUri(UriBuilder.fromResource(AgentResource.class).build()).build();
+        return Response.seeOther(redirect).build();
     }
 
     @POST
@@ -132,6 +144,27 @@ public class AgentResource
             rs.add(new SlotDescription(entry.getValue(), ui));
         }
         return rs;
+    }
+
+    private List<EnvDescription> describeEnv(Map<String, URI> envTable) {
+        List<EnvDescription> rs = Lists.newArrayList();
+        for (Map.Entry<String, URI> entry : envTable.entrySet()) {
+            rs.add(new EnvDescription(entry.getKey(), entry.getValue()));
+        }
+        return rs;
+    }
+
+    private static class EnvDescription
+    {
+        public final String path;
+        public final URI url;
+
+        EnvDescription(String path, URI url)
+        {
+            this.path = path;
+            this.url = url;
+        }
+
     }
 
     public static class DeployJson

@@ -5,6 +5,7 @@ import com.google.common.base.Preconditions;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
+import com.google.common.io.ByteStreams;
 import com.google.common.io.Files;
 import com.google.common.io.InputSupplier;
 import org.apache.commons.io.FileUtils;
@@ -14,7 +15,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 import java.net.URL;
+import java.net.URLStreamHandler;
+import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.TimeUnit;
 
 public class Slot
@@ -67,7 +71,7 @@ public class Slot
         return String.format("<Slot %s>", root);
     }
 
-    public static Slot deploy(File root, Deployment d) throws IOException
+    public static Slot deploy(File root, Deployment d, ConcurrentMap<String, URI> envFiles) throws IOException
     {
         UUID uuid = UUID.randomUUID();
         File deployment_dir = new File(root, uuid.toString());
@@ -97,6 +101,22 @@ public class Slot
         Files.write(d.getName(), new File(deployment_dir, "name"), Charsets.UTF_8);
         Files.write(uuid.toString(), new File(deployment_dir, "slot_id"), Charsets.UTF_8);
         Files.write(d.getTarballUrl().toString(), new File(deployment_dir, "bundle_url"), Charsets.UTF_8);
+
+        for (final Map.Entry<String, URI> entry : envFiles.entrySet()) {
+            File target = new File(dir, entry.getKey());
+            if (!target.getParentFile().exists()) {
+                Preconditions.checkArgument(target.getParentFile().mkdirs(),
+                                            "Unable to create directory for config file %s", target);
+            }
+            Files.copy(new InputSupplier<InputStream>()
+            {
+                @Override
+                public InputStream getInput() throws IOException
+                {
+                    return entry.getValue().toURL().openStream();
+                }
+            }, target);
+        }
 
         Files.move(dir, new File(deployment_dir, "deploy"));
 
@@ -206,6 +226,26 @@ public class Slot
         finally {
             state.invalidate(KEY);
         }
+    }
+
+    public Status updateConfig(Map<String, URI> envFiles) throws IOException
+    {
+        for (final Map.Entry<String, URI> entry : envFiles.entrySet()) {
+            File target = new File(deployDir, entry.getKey());
+            if (!target.getParentFile().exists()) {
+                Preconditions.checkArgument(target.getParentFile().mkdirs(),
+                                            "Unable to create directory for config file %s", target);
+            }
+            Files.copy(new InputSupplier<InputStream>()
+            {
+                @Override
+                public InputStream getInput() throws IOException
+                {
+                    return entry.getValue().toURL().openStream();
+                }
+            }, target);
+        }
+        return Status.success();
     }
 
     public void clear() throws IOException

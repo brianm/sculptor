@@ -15,6 +15,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriBuilder;
 import javax.ws.rs.core.UriInfo;
+import java.io.IOException;
 import java.net.URI;
 import java.util.UUID;
 
@@ -50,6 +51,7 @@ public class SlotResource
             URI stop = ui.getAbsolutePathBuilder().path(SlotResource.class, "stop").build(uuid);
             URI restart = ui.getAbsolutePathBuilder().path(SlotResource.class, "restart").build(uuid);
             URI clear = ui.getAbsolutePathBuilder().path(SlotResource.class, "clear").build(uuid);
+            URI updateConfig = ui.getAbsolutePathBuilder().path(SlotResource.class, "updateConfig").build(uuid);
             Status status = stat;
             Slot slot = s;
         });
@@ -88,5 +90,13 @@ public class SlotResource
     {
         agent.clear(uuid);
         return Response.seeOther(UriBuilder.fromResource(AgentResource.class).build()).build();
+    }
+
+    @POST
+    @Path("update-config")
+    public Response updateConfig(final @PathParam("uuid") UUID uuid) throws IOException
+    {
+        Status s = agent.getSlot(uuid).updateConfig(agent.getEnvironmentConfig());
+        return Response.seeOther(UriBuilder.fromResource(SlotResource.class).build(uuid)).build();
     }
 }
