@@ -49,10 +49,6 @@ public class Slot
         this.name = name;
         this.root = path;
         this.deployDir = new File(path, "deploy");
-
-        Files.write(uuid.toString(), new File(root, "uuid"), Charsets.UTF_8);
-        Files.write(name, new File(root, "name"), Charsets.UTF_8);
-        Files.write(bundle.toString(), new File(root, "bundle_source"), Charsets.UTF_8);
     }
 
     public File getDeployDir()
@@ -98,6 +94,9 @@ public class Slot
 
         Preconditions.checkState(tmp.listFiles().length == 1, "Too many directories in root of expanded tarball");
         File dir = tmp.listFiles()[0];
+        Files.write(d.getName(), new File(deployment_dir, "name"), Charsets.UTF_8);
+        Files.write(uuid.toString(), new File(deployment_dir, "slot_id"), Charsets.UTF_8);
+        Files.write(d.getTarballUrl().toString(), new File(deployment_dir, "bundle_url"), Charsets.UTF_8);
 
         Files.move(dir, new File(deployment_dir, "deploy"));
 
@@ -108,8 +107,8 @@ public class Slot
     public static Slot from(File root) throws IOException
     {
         String name = Files.readFirstLine(new File(root, "name"), Charsets.UTF_8);
-        String uuid_s = Files.readFirstLine(new File(root, "uuid"), Charsets.UTF_8);
-        String bundle_source = Files.readFirstLine(new File(root, "bundle_source"), Charsets.UTF_8);
+        String uuid_s = Files.readFirstLine(new File(root, "slot_id"), Charsets.UTF_8);
+        String bundle_source = Files.readFirstLine(new File(root, "bundle_url"), Charsets.UTF_8);
         return new Slot(UUID.fromString(uuid_s),
                         URI.create(bundle_source),
                         name,

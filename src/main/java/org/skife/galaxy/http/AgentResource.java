@@ -129,8 +129,7 @@ public class AgentResource
     {
         List<SlotDescription> rs = Lists.newArrayList();
         for (Map.Entry<UUID, Slot> entry : raw_slots.entrySet()) {
-            rs.add(new SlotDescription(entry.getValue(),
-                                       ui));
+            rs.add(new SlotDescription(entry.getValue(), ui));
         }
         return rs;
     }
