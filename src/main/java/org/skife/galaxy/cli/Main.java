@@ -1,8 +1,10 @@
 package org.skife.galaxy.cli;
 
-import org.iq80.cli.GitLikeCommandParser;
+import org.iq80.cli.Cli;
+import org.iq80.cli.Help;
 import org.slf4j.bridge.SLF4JBridgeHandler;
 
+import java.util.concurrent.Callable;
 import java.util.logging.Handler;
 import java.util.logging.LogManager;
 
@@ -18,13 +20,20 @@ public class Main
 
     public static void main(String[] args) throws Exception
     {
-        GitLikeCommandParser.builder("sculptor")
-                                     .withCommandType(SculptorCommand.class)
-                                     .addCommand(AgentCommand.class)
-                                     .addCommand(DeployCommand.class)
-                                     .build()
-                                     .parse(args)
-                                     .execute();
 
+        Cli.CliBuilder<Callable> builder = Cli.buildCli("sculptor", Callable.class)
+                                              .withDescription("A Galaxy implementation")
+                                              .withDefaultCommand(Help.class)
+                                              .withCommand(Help.class);
+
+
+        builder.withGroup("agent")
+               .withDescription("Manage a local agent")
+               .withDefaultCommand(Help.class)
+               .withCommand(Help.class)
+               .withCommand(AgentDeploy.class)
+               .withCommand(AgentRun.class);
+
+        builder.build().parse(args).call();
     }
 }

@@ -6,27 +6,27 @@ import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.iq80.cli.Command;
 import org.iq80.cli.Option;
-import org.iq80.cli.Options;
-import org.iq80.cli.OptionsType;
+import org.iq80.cli.OptionType;
 import org.skife.galaxy.agent.http.GuiceAgentServletModule;
 import org.skife.galaxy.http.NotFoundServlet;
 
 import java.io.File;
 import java.util.EnumSet;
+import java.util.concurrent.Callable;
 
-@Command(name = "agent", description = "Run the agent")
-public class AgentCommand implements SculptorCommand
+@Command(name = "run", description = "Run the agent")
+public class AgentRun implements Callable<Void>
 {
-    @Option(options = {"-r", "--root"}, required = true, description = "Root directory for deployment slots")
+    @Option(name = {"-r", "--root"}, required = true, description = "Root directory for deployment slots")
     public File root;
 
-    @Option(options={"-p", "--port"}, description = "Port for HTTP server, default is 25365")
+    @Option(name = {"-p", "--port"}, description = "Port for HTTP server, default is 25365")
     public int port = 25365;
 
-    @Options(OptionsType.GLOBAL)
-    public GlobalOptions global;
+    @Option(name = "--debug", type = OptionType.GLOBAL)
+    public boolean debug;
 
-    public void execute() throws Exception
+    public Void call() throws Exception
     {
         if (!root.exists() && root.isDirectory()) {
             Preconditions.checkState(root.mkdirs(), "unable to create agent root directory %s", root.getAbsolutePath());
@@ -34,12 +34,14 @@ public class AgentCommand implements SculptorCommand
 
         Server server = new Server(port);
         ServletContextHandler handler = new ServletContextHandler(ServletContextHandler.NO_SESSIONS);
-        handler.addEventListener(new GuiceAgentServletModule(root, global));
+        handler.addEventListener(new GuiceAgentServletModule(root, debug));
         handler.addFilter(com.google.inject.servlet.GuiceFilter.class, "/*", EnumSet.allOf(DispatcherType.class));
         handler.addServlet(NotFoundServlet.class, "/*");
         server.setHandler(handler);
 
         server.start();
         server.join();
+
+        return null;
     }
 }

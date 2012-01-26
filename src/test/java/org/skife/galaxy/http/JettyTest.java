@@ -11,7 +11,6 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
-import org.skife.galaxy.cli.GlobalOptions;
 import org.skife.galaxy.agent.http.GuiceAgentServletModule;
 
 import java.io.File;
@@ -45,7 +44,7 @@ public class JettyTest
         Server server = new Server(25365);
 
         ServletContextHandler handler = new ServletContextHandler(ServletContextHandler.NO_SESSIONS);
-        handler.addEventListener(new GuiceAgentServletModule(tmp, new GlobalOptions()));
+        handler.addEventListener(new GuiceAgentServletModule(tmp, true));
         handler.addFilter(com.google.inject.servlet.GuiceFilter.class, "/*", EnumSet.allOf(DispatcherType.class));
         handler.addServlet(NotFoundServlet.class, "/*");
         server.setHandler(handler);
@@ -71,7 +70,7 @@ public class JettyTest
 
         ServletContextHandler handler = new ServletContextHandler(ServletContextHandler.NO_SESSIONS);
         handler.addEventListener(new GuiceAgentServletModule(new File("/tmp/sculptor"),
-                                                             new GlobalOptions(GlobalOptions.RunType.DEBUG)));
+                                                             true));
         handler.addFilter(com.google.inject.servlet.GuiceFilter.class, "/*", EnumSet.allOf(DispatcherType.class));
         handler.addServlet(NotFoundServlet.class, "/*");
         server.setHandler(handler);
