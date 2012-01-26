@@ -1,0 +1,9 @@
+Package: [[name]]
+Version: [[version]]
+Section: misc
+Priority: optional
+Architecture: all
+Depends: java6-runtime-headless, adduser
+Maintainer: Brian McCallister <brianm@skife.org>
+Description: jetty java servlet container
+Distribution: development

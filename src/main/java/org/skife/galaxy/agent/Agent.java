@@ -1,11 +1,11 @@
-package org.skife.galaxy;
+package org.skife.galaxy.agent;
 
 import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 import com.google.common.io.Files;
 import com.google.common.util.concurrent.MoreExecutors;
-import org.skife.galaxy.http.ConfigurationItem;
+import org.skife.galaxy.agent.http.ConfigurationItem;
 import org.skife.jdbi.v2.DBI;
 import org.skife.jdbi.v2.StatementContext;
 import org.skife.jdbi.v2.sqlobject.Bind;

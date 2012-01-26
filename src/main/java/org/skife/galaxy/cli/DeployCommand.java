@@ -2,7 +2,6 @@ package org.skife.galaxy.cli;
 
 import com.google.common.base.Preconditions;
 import com.ning.http.client.AsyncHttpClient;
-import com.ning.http.client.FluentStringsMap;
 import com.ning.http.client.RequestBuilder;
 import com.ning.http.client.Response;
 import org.codehaus.jackson.map.DeserializationConfig;
@@ -10,7 +9,7 @@ import org.codehaus.jackson.map.ObjectMapper;
 import org.iq80.cli.Arguments;
 import org.iq80.cli.Command;
 import org.iq80.cli.Option;
-import org.skife.galaxy.http.Action;
+import org.skife.galaxy.agent.http.Action;
 
 import javax.ws.rs.core.MediaType;
 import java.io.File;

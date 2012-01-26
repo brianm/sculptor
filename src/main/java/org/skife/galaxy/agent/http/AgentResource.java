@@ -1,11 +1,11 @@
-package org.skife.galaxy.http;
+package org.skife.galaxy.agent.http;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.sun.jersey.api.view.Viewable;
-import org.skife.galaxy.Agent;
-import org.skife.galaxy.Deployment;
-import org.skife.galaxy.Slot;
+import org.skife.galaxy.agent.Agent;
+import org.skife.galaxy.agent.Deployment;
+import org.skife.galaxy.agent.Slot;
 
 import javax.inject.Inject;
 import javax.ws.rs.Consumes;

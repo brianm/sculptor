@@ -2,7 +2,7 @@ package org.skife.galaxy.http;
 
 import com.google.inject.Binder;
 import com.google.inject.Module;
-import org.skife.galaxy.AgentRoot;
+import org.skife.galaxy.agent.AgentRoot;
 import org.skife.galaxy.cli.GlobalOptions;
 
 import java.io.File;

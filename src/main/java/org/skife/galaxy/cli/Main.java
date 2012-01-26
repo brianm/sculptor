@@ -15,6 +15,7 @@ public class Main
         }
         javaRootLogger.addHandler(new SLF4JBridgeHandler());
     }
+
     public static void main(String[] args) throws Exception
     {
         GitLikeCommandParser.builder("sculptor")

@@ -8,7 +8,7 @@ import org.iq80.cli.Command;
 import org.iq80.cli.Option;
 import org.iq80.cli.Options;
 import org.iq80.cli.OptionsType;
-import org.skife.galaxy.http.GuiceAgentServletModule;
+import org.skife.galaxy.agent.http.GuiceAgentServletModule;
 import org.skife.galaxy.http.NotFoundServlet;
 
 import java.io.File;

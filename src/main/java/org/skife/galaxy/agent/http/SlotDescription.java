@@ -1,11 +1,10 @@
-package org.skife.galaxy.http;
+package org.skife.galaxy.agent.http;
 
-import org.skife.galaxy.Slot;
+import org.skife.galaxy.agent.Slot;
 
 import javax.ws.rs.core.UriBuilder;
 import javax.ws.rs.core.UriInfo;
 import java.net.URI;
-import java.util.Collections;
 import java.util.List;
 
 import static java.util.Arrays.asList;

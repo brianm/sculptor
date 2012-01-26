@@ -1,4 +1,4 @@
-package org.skife.galaxy;
+package org.skife.galaxy.agent;
 
 import java.net.URI;
 

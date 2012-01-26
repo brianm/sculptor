@@ -1,4 +1,4 @@
-package org.skife.galaxy.http;
+package org.skife.galaxy.agent.http;
 
 import org.codehaus.jackson.annotate.JsonProperty;
 

@@ -5,6 +5,10 @@ import org.apache.commons.io.FileUtils;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.skife.galaxy.agent.Agent;
+import org.skife.galaxy.agent.Deployment;
+import org.skife.galaxy.agent.Slot;
+import org.skife.galaxy.agent.Status;
 
 import java.io.File;
 

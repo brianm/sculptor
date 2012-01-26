@@ -12,6 +12,7 @@ import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.skife.galaxy.cli.GlobalOptions;
+import org.skife.galaxy.agent.http.GuiceAgentServletModule;
 
 import java.io.File;
 import java.util.EnumSet;

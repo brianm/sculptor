@@ -1,9 +1,9 @@
-package org.skife.galaxy.http;
+package org.skife.galaxy.agent.http;
 
 import com.sun.jersey.api.view.Viewable;
-import org.skife.galaxy.Agent;
-import org.skife.galaxy.Slot;
-import org.skife.galaxy.Status;
+import org.skife.galaxy.agent.Agent;
+import org.skife.galaxy.agent.Slot;
+import org.skife.galaxy.agent.Status;
 
 import javax.inject.Inject;
 import javax.ws.rs.GET;

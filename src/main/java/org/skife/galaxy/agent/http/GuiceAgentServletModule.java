@@ -1,4 +1,4 @@
-package org.skife.galaxy.http;
+package org.skife.galaxy.agent.http;
 
 import com.google.inject.Guice;
 import com.google.inject.Injector;
@@ -6,6 +6,7 @@ import com.google.inject.Stage;
 import com.google.inject.servlet.GuiceServletContextListener;
 import com.sun.jersey.guice.JerseyServletModule;
 import org.skife.galaxy.cli.GlobalOptions;
+import org.skife.galaxy.http.ArgumentsModule;
 
 import javax.servlet.ServletContextEvent;
 import java.io.File;

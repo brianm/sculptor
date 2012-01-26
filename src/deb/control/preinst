@@ -1,0 +1,2 @@
+#!/bin/sh
+adduser --system --group --no-create-home --shell /bin/nologin --disabled-password --disabled-login galaxy

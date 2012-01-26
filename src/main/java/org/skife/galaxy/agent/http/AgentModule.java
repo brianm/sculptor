@@ -1,4 +1,4 @@
-package org.skife.galaxy.http;
+package org.skife.galaxy.agent.http;
 
 import com.google.inject.Provides;
 import com.google.inject.Scopes;
@@ -8,9 +8,10 @@ import com.sun.jersey.guice.spi.container.servlet.GuiceContainer;
 import org.codehaus.jackson.jaxrs.JacksonJsonProvider;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.codehaus.jackson.map.SerializationConfig;
-import org.skife.galaxy.Agent;
-
-import javax.inject.Scope;
+import org.skife.galaxy.agent.Agent;
+import org.skife.galaxy.http.MustacheTemplateProcessor;
+import org.skife.galaxy.http.StaticServlet;
+import org.skife.galaxy.http.TemplateRoot;
 
 public class AgentModule extends ServletModule
 {
