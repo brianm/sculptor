@@ -3,7 +3,6 @@ package org.skife.galaxy.cli;
 import com.google.common.base.Charsets;
 import com.google.common.io.Files;
 import jnr.ffi.Library;
-import jnr.ffi.byref.IntByReference;
 import org.iq80.cli.Command;
 import org.iq80.cli.Option;
 
@@ -24,13 +23,13 @@ public class AgentStatus implements Callable<Void>
             int pid = Integer.valueOf(Files.readFirstLine(pidfile, Charsets.US_ASCII));
             LibC c = Library.loadLibrary("c", LibC.class);
             int rs = c.kill(pid, 0);
-            System.out.println("status is " + rs);
             if (rs == 0) {
                 // child running
+                System.out.printf("running\t%d\n",pid);
                 System.exit(0);
             }
             else {
-                System.out.println("Stopped, but pidfile still exists");
+                System.out.printf("Stopped, but pidfile %s still exists\n", pidfile.getAbsolutePath());
                 System.exit(1);
             }
         }
