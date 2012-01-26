@@ -32,6 +32,9 @@ public class Main
                .withDefaultCommand(Help.class)
                .withCommand(Help.class)
                .withCommand(AgentDeploy.class)
+               .withCommand(AgentStart.class)
+               .withCommand(AgentStop.class)
+               .withCommand(AgentStatus.class)
                .withCommand(AgentRun.class);
 
         builder.build().parse(args).call();
