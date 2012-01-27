@@ -26,8 +26,14 @@ public class AgentRun implements Callable<Void>
     @Option(name = "--debug", type = OptionType.GLOBAL)
     public boolean debug;
 
+    @Option(name={"-c", "--config"}, description = "Configuration file", type = OptionType.GLOBAL)
+    public File config = new File("/etc/sculptor/agent.conf");
+
     public Void call() throws Exception
     {
+        ConfigFile cf = new ConfigFile(config);
+        root = cf.fallbackFrom(root, "root");
+
         if (!root.exists() && root.isDirectory()) {
             Preconditions.checkState(root.mkdirs(), "unable to create agent root directory %s", root.getAbsolutePath());
         }

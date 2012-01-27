@@ -19,7 +19,7 @@ import java.util.concurrent.Callable;
 public class AgentStart implements Callable<Void>
 {
     @Option(name = {"-r", "--root"}, required = true, description = "Root directory for deployment slots")
-    public File root = new File(".");
+    public File root;
 
     @Option(name = {"-P", "--port"}, description = "Port for HTTP server, default is 25365")
     public int port = 25365;
@@ -28,13 +28,21 @@ public class AgentStart implements Callable<Void>
     public boolean debug = false;
 
     @Option(name = {"-p", "--pidfile"}, description = "Pidfile")
-    public File pidfile = new File("sculptor-agent.pid");
+    public File pidfile;
 
     @Option(name = {"-l", "--log"}, description = "Log file")
-    public File logfile = new File("sculptor-agent.log");
+    public File logfile;
+
+    @Option(name={"-c", "--config"}, description = "Configuration file", type = OptionType.GLOBAL)
+    public File config = new File("/etc/sculptor/agent.conf");
 
     public Void call() throws Exception
     {
+        ConfigFile cf = new ConfigFile(config);
+        root = cf.fallbackFrom(root, "root");
+        logfile = cf.fallbackFrom(logfile, "log");
+        pidfile = cf.fallbackFrom(pidfile, "pidfile");
+
         if (!root.exists() && root.isDirectory()) {
             Preconditions.checkState(root.mkdirs(), "unable to create agent root directory %s", root.getAbsolutePath());
         }

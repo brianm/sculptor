@@ -1,2 +1,21 @@
 #!/bin/sh
-adduser --system --group --no-create-home --shell /bin/nologin --disabled-password --disabled-login galaxy
+adduser --system --group --no-create-home --shell /bin/nologin --disabled-password --disabled-login sculptor
+
+if [ ! -d /var/log/sculptor ]
+then
+    mkdir -p /var/log/sculptor
+    touch /var/log/sculptor/agent.log
+    chown -R sculptor.sculptor /var/log/sculptor
+fi
+
+if [ ! -d /var/sculptor ]
+then
+    mkdir -p /var/sculptor
+    chown sculptor.sculptor /var/sculptor
+fi
+
+if [ ! -d /var/run/sculptor ]
+then
+    mkdir -p /var/run/sculptor
+    chown sculptor.sculptor /var/run/sculptor
+fi
