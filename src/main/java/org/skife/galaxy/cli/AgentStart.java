@@ -1,6 +1,9 @@
 package org.skife.galaxy.cli;
 
+import com.google.common.base.Charsets;
 import com.google.common.base.Preconditions;
+import com.google.common.io.Files;
+import jnr.ffi.Library;
 import org.eclipse.jetty.server.DispatcherType;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.servlet.ServletContextHandler;
@@ -42,6 +45,16 @@ public class AgentStart implements Callable<Void>
         root = cf.fallbackFrom(root, "root");
         logfile = cf.fallbackFrom(logfile, "log");
         pidfile = cf.fallbackFrom(pidfile, "pidfile");
+
+        if (pidfile.exists()) {
+            // pidfile exists, check to see if an agent is alreay running
+            int pid = Integer.parseInt(Files.readFirstLine(pidfile, Charsets.US_ASCII));
+            int rs = Library.loadLibrary("c", LibC.class).kill(pid, 0);
+            if (rs == 0) {
+                // already running, LSB says this is a success case
+                return null;
+            }
+        }
 
         if (!root.exists() && root.isDirectory()) {
             Preconditions.checkState(root.mkdirs(), "unable to create agent root directory %s", root.getAbsolutePath());

@@ -8,6 +8,8 @@ import com.google.common.cache.LoadingCache;
 import com.google.common.io.Files;
 import com.google.common.io.InputSupplier;
 import org.apache.commons.io.FileUtils;
+import org.skife.galaxy.agent.command.Command;
+import org.skife.galaxy.agent.command.CommandFailedException;
 
 import java.io.File;
 import java.io.IOException;

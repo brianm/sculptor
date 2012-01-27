@@ -11,6 +11,8 @@ import org.skife.galaxy.agent.Slot;
 import org.skife.galaxy.agent.Status;
 
 import java.io.File;
+import java.net.URI;
+import java.util.Collections;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.not;
@@ -32,7 +34,7 @@ public class AgentTest
         agent = new Agent(tempDir);
 
         File tarball = new File("src/test/resources/echo.tar.gz");
-        d = new Deployment("test", tarball.toURI());
+        d = new Deployment("test", tarball.toURI(), Collections.<String, URI>emptyMap());
 
     }
 

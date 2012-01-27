@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.skife.galaxy.agent;
+package org.skife.galaxy.agent.command;
 
 import com.google.common.base.Preconditions;
 

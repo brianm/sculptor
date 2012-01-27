@@ -23,6 +23,7 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.URI;
 import java.net.UnknownHostException;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -105,7 +106,7 @@ public class AgentResource
     @Produces(MediaType.TEXT_HTML)
     public Response deploy(@FormParam("name") String name, @FormParam("url") URI tarball) throws IOException
     {
-        final Slot s = agent.deploy(new Deployment(name, tarball));
+        final Slot s = agent.deploy(new Deployment(name, tarball, Collections.<String, URI>emptyMap()));
         final URI slot_uri = UriBuilder.fromResource(SlotResource.class)
                                        .host(ui.getRequestUri().getHost())
                                        .port(ui.getRequestUri().getPort())
@@ -126,7 +127,7 @@ public class AgentResource
     @Produces(MediaType.APPLICATION_JSON)
     public Response deployJson(DeployJson json) throws IOException
     {
-        final Slot s = agent.deploy(new Deployment(json.name, json.url));
+        final Slot s = agent.deploy(new Deployment(json.name, json.url, json.configuration));
         final URI slot_uri = UriBuilder.fromResource(SlotResource.class)
                                        .host(ui.getRequestUri().getHost())
                                        .port(ui.getRequestUri().getPort())
@@ -171,5 +172,6 @@ public class AgentResource
     {
         public URI    url;
         public String name;
+        public Map<String, URI> configuration;
     }
 }

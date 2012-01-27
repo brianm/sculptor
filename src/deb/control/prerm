@@ -1,3 +1,2 @@
 #!/bin/sh
-# update-rc.d sculptor-agent remove
 service sculptor-agent stop

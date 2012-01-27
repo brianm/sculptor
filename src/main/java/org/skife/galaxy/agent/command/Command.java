@@ -1,4 +1,4 @@
-package org.skife.galaxy.agent;
+package org.skife.galaxy.agent.command;
 
 import com.google.common.base.Charsets;
 import com.google.common.base.Preconditions;

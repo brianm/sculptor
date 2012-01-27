@@ -5,5 +5,5 @@ Priority: optional
 Architecture: all
 Depends: java6-runtime-headless, adduser
 Maintainer: Brian McCallister <brianm@skife.org>
-Description: jetty java servlet container
+Description: Galaxy bundle deployment agent
 Distribution: development

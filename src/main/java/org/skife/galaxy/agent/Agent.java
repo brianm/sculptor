@@ -5,6 +5,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 import com.google.common.io.Files;
 import com.google.common.util.concurrent.MoreExecutors;
+import org.skife.galaxy.agent.command.CommandFailedException;
 import org.skife.galaxy.agent.http.ConfigurationItem;
 import org.skife.jdbi.v2.DBI;
 import org.skife.jdbi.v2.StatementContext;
@@ -39,7 +40,6 @@ public class Agent
         }
     }
 
-
     public static final ExecutorService EXEC_POOL = MoreExecutors.getExitingExecutorService(new ThreadPoolExecutor(1, 100, 100, TimeUnit.MILLISECONDS, new LinkedBlockingDeque<Runnable>()));
 
     private final Map<UUID, Slot> slots = Maps.newConcurrentMap();
@@ -50,12 +50,10 @@ public class Agent
     public Agent(@AgentRoot File root) throws IOException
     {
         this.root = root;
+
         File dbFile = new File(root, "state.db");
         Files.createParentDirs(dbFile);
-
-        String url = "jdbc:sqlite:" + dbFile.getAbsolutePath();
-        DBI dbi = new DBI(url);
-        this.dao = dbi.onDemand(Dao.class);
+        dao = new DBI("jdbc:sqlite:" + dbFile.getAbsolutePath()).onDemand(Dao.class);
         dao.createEnv();
 
         for (File path : root.listFiles()  ) {

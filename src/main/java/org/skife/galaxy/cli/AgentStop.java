@@ -15,7 +15,7 @@ public class AgentStop implements Callable<Void>
 {
 
     @Option(name = {"-p", "--pidfile"}, description = "Pidfile")
-    public File pidfile = new File("sculptor-agent.pid");
+    public File pidfile;
 
     @Option(name={"-c", "--config"}, description = "Configuration file", type = OptionType.GLOBAL)
     public File config = new File("/etc/sculptor/agent.conf");

@@ -29,6 +29,7 @@ public class AgentModule extends ServletModule
 
         // real application model
         bind(Agent.class).in(Scopes.SINGLETON);
+        bind(StagingSpace.class).in(Scopes.SINGLETON);
 
         // jersey components
         bind(MustacheTemplateProcessor.class).in(Scopes.SINGLETON);
