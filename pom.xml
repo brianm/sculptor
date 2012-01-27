@@ -224,10 +224,11 @@
                                 </data>
 
                                 <data>
-                                    <src>${basedir}/src/deb/init.d</src>
-                                    <type>directory</type>
+                                    <src>${basedir}/src/deb/init.d/sculptor-agent</src>
+                                    <type>file</type>
                                     <mapper>
                                         <type>perm</type>
+                                        <filemode>755</filemode>
                                         <prefix>/etc/init.d</prefix>
                                     </mapper>
                                 </data>
