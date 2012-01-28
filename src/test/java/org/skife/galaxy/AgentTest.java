@@ -35,7 +35,6 @@ public class AgentTest
 
         File tarball = new File("src/test/resources/echo.tar.gz");
         d = new Deployment("test", tarball.toURI(), Collections.<String, URI>emptyMap());
-
     }
 
     @After

@@ -26,10 +26,11 @@ public class AgentModule extends ServletModule
         // resources
         bind(AgentResource.class);
         bind(SlotResource.class);
+        bind(StagedDeploymentResource.class);
 
         // real application model
         bind(Agent.class).in(Scopes.SINGLETON);
-        bind(StagingSpace.class).in(Scopes.SINGLETON);
+        bind(ScratchSpace.class).in(Scopes.SINGLETON);
 
         // jersey components
         bind(MustacheTemplateProcessor.class).in(Scopes.SINGLETON);

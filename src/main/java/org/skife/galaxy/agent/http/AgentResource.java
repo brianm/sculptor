@@ -23,7 +23,6 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.URI;
 import java.net.UnknownHostException;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -34,14 +33,16 @@ import static java.util.Arrays.asList;
 @Path("/")
 public class AgentResource
 {
-    private final UriInfo ui;
-    private final Agent   agent;
+    private final UriInfo      ui;
+    private final Agent        agent;
+    private final ScratchSpace scratch;
 
     @Inject
-    public AgentResource(UriInfo ui, Agent agent)
+    public AgentResource(UriInfo ui, Agent agent, ScratchSpace scratch)
     {
         this.ui = ui;
         this.agent = agent;
+        this.scratch = scratch;
     }
 
     @GET
@@ -98,27 +99,18 @@ public class AgentResource
     {
         agent.addEnvironmentConfiguration(path, url);
         URI redirect = UriBuilder.fromUri(UriBuilder.fromResource(AgentResource.class).build()).build();
-        return Response.seeOther(redirect).build();
+        return Responses.viewableCreatedWithRedirectTo(redirect);
     }
 
     @POST
-    @Path("deploy")
+    @Path("stage_deployment")
     @Produces(MediaType.TEXT_HTML)
-    public Response deploy(@FormParam("name") String name, @FormParam("url") URI tarball) throws IOException
+    public Response stageDeployment() throws IOException
     {
-        final Slot s = agent.deploy(new Deployment(name, tarball, Collections.<String, URI>emptyMap()));
-        final URI slot_uri = UriBuilder.fromResource(SlotResource.class)
-                                       .host(ui.getRequestUri().getHost())
-                                       .port(ui.getRequestUri().getPort())
-                                       .scheme(ui.getRequestUri().getScheme())
-                                       .build(s.getId());
-        return Response.created(slot_uri)
-                       .location(slot_uri)
-                       .entity(new Viewable("slot_created.html", new Object()
-                       {
-                           URI uri = slot_uri;
-                       }))
-                       .build();
+        UUID dep_id = UUID.randomUUID();
+        final URI dep_uri = UriBuilder.fromResource(StagedDeploymentResource.class).build(dep_id);
+        scratch.stageDeployment(dep_id);
+        return Responses.viewableCreatedWithRedirectTo(dep_uri);
     }
 
     @POST
@@ -135,6 +127,7 @@ public class AgentResource
                                        .build(s.getId());
 
         return Response.created(slot_uri)
+                       .location(slot_uri)
                        .entity(new SlotDescription(s, ui)).build();
     }
 
@@ -147,7 +140,8 @@ public class AgentResource
         return rs;
     }
 
-    private List<EnvDescription> describeEnv(Map<String, URI> envTable) {
+    private List<EnvDescription> describeEnv(Map<String, URI> envTable)
+    {
         List<EnvDescription> rs = Lists.newArrayList();
         for (Map.Entry<String, URI> entry : envTable.entrySet()) {
             rs.add(new EnvDescription(entry.getKey(), entry.getValue()));
@@ -158,7 +152,7 @@ public class AgentResource
     private static class EnvDescription
     {
         public final String path;
-        public final URI url;
+        public final URI    url;
 
         EnvDescription(String path, URI url)
         {
@@ -170,8 +164,8 @@ public class AgentResource
 
     public static class DeployJson
     {
-        public URI    url;
-        public String name;
+        public URI              url;
+        public String           name;
         public Map<String, URI> configuration;
     }
 }

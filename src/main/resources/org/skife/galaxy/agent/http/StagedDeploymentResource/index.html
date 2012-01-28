@@ -1,68 +1,78 @@
 {{< layout:page }}
 {{$body}}
-<!--  {{agent.root}} -->
 <div class="page-header">
-    <h1>{{hostname}} ({{ip}})</h1>
+    <h1>Staged Deployment</h1>
 </div>
-<section>
-    <div class="row">
-        <div class="span2">
-            <h4>Slots ({{slots.size}})</h4>
-        </div>
-        <div class="span14">
-            <table>
-                {{#slots}}
-                <tr class="{{#slot.running}}green-bg{{/slot.running}} {{#slot.stopped}}red-bg{{/slot.stopped}}">
-                    <td><a href="/slot/{{slot.id}}">{{slot.name}}</a></td>
-                    <td><a href="/slot/{{slot.id}}">{{slot.id}}</a></td>
-                </tr>
-                {{/slots}}
-            </table>
-        </div>
+<div class="row">
+    <div class="span2">
+        <h4>Name</h4>
     </div>
-    <div class="row">
-        <div class="span16">
+    <div class="span14">
+        {{#deployment.name}}
+        <h5>{{deployment.name}}</h5>
+        {{/deployment.name}}
+
+        {{^deployment.name}}
+        <form action="name" method="post">
             <div class="row">
-                <div class="span2">
-                    <h4>Deploy</h4>
+                <div class="span10">
+                    <input type="text" class="span10" name="name"/>
                 </div>
-                <div class="span14">
-                    <form action="stage_deployment" method="post">
-                        <input type="submit" class="btn primary span4" value="Prepare Deployment"/>
-                    </form>
+                <div class="span4">
+                    <input type="submit" class="btn primary span3" value="Set Name"/>
                 </div>
             </div>
-        </div>
+        </form>
+        {{/deployment.name}}
     </div>
-</section>
+</div>
+<div class="row">
+    <div class="span2">
+        <h4>Bundle</h4>
+    </div>
+    <div class="span14">
+        {{#deployment.bundle}}
+        <h5>{{deployment.bundle}}</h5>
+        {{/deployment.bundle}}
 
+        {{^deployment.bundle}}
+        <form action="bundle" method="post">
+            <div class="row">
+                <div class="span10">
+                    <input type="text" class="span10" name="bundle"/>
+                </div>
+                <div class="span4">
+                    <input type="submit" class="btn primary span3" value="Set Bundle URL"/>
+                </div>
+            </div>
+        </form>
+        {{/deployment.bundle}}
+    </div>
+</div>
 <section>
-    <div class="page-header">
-        <h2>Environment Configuration</h2>
-    </div>
-
     <div class="row">
         <div class="span2">
             <h4>Config</h4>
         </div>
         <div class="span14">
             <table>
-                {{#environment}}
+                {{#deployment.configuration}}
                 <tr>
                     <td>{{path}}</td>
                     <td><a href="{{url}}">{{url}}</a></td>
                 </tr>
-                {{/environment}}
+                {{/deployment.configuration}}
             </table>
         </div>
     </div>
 
     <div class="row">
         <div class="offset2 span14">
-            <form action="environment" method="post">
+            <form action="config" method="post">
                 <fieldset>
                     <div class="clearfix">
                         <label for="env-config-path">Path</label>
+
                         <div class="input">
                             <input value="/env/hello.properties"
                                    type="text"
@@ -73,6 +83,7 @@
                     </div>
                     <div class="clearfix">
                         <label for="env-config-url">Config URL</label>
+
                         <div class="input">
                             <input value="file:///Users/brianm/src/sculptor/src/test/resources/some_config.properties"
                                    type="text"
@@ -82,24 +93,12 @@
                         </div>
                     </div>
                     <div class="actions">
-                        <input type="submit" class="btn primary span4" value="Add Environment Config"/>
+                        <input type="submit" class="btn primary span3" value="Add Config"/>
                         <button type="reset" class="btn">Cancel</button>
                     </div>
                 </fieldset>
             </form>
         </div>
-    </div>
-</section>
-
-<section>
-    <div class="page-header">
-        <h2>Properties</h2>
-    </div>
-    <div class="row">
-        <div class="span2">
-            <h4>Root</h4>
-        </div>
-        <div class="span14"><h5>{{agent.root}}</h5></div>
     </div>
 </section>
 {{/body}}
