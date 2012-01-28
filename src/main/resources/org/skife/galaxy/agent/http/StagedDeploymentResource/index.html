@@ -1,8 +1,21 @@
 {{< layout:page }}
 {{$body}}
-<div class="page-header">
-    <h1>Staged Deployment</h1>
-</div>
+<form action="deploy" method="post">
+    <div class="page-header">
+        <div class="row">
+            <div class="span8">
+                <h1>Staged Deployment</h1>
+            </div>
+            <div class="offset4 span3">
+                <input type="Submit"
+                       {{^deployment.ready}}
+                       disabled="true"
+                       {{/deployment.ready}}
+                       class="span3 btn success" value="Deploy!"/>
+            </div>
+        </div>
+    </div>
+</form>
 <div class="row">
     <div class="span2">
         <h4>Name</h4>

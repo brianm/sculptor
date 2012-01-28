@@ -2,6 +2,7 @@ package org.skife.galaxy.agent.http;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import org.skife.galaxy.agent.Deployment;
 
 import java.net.URI;
 import java.util.List;
@@ -15,6 +16,7 @@ public class StagedDeployment
     private final AtomicReference<String> name = new AtomicReference<String>();
     private final AtomicReference<URI> bundle = new AtomicReference<URI>();
     private final Map<String, URI> config = Maps.newConcurrentMap();
+
     public StagedDeployment(UUID id)
     {
         this.id = id;
@@ -25,7 +27,8 @@ public class StagedDeployment
         this.name.set(name);
     }
 
-    public String getName() {
+    public String getName()
+    {
         return name.get();
     }
 
@@ -51,5 +54,16 @@ public class StagedDeployment
             rs.add(new ConfigurationItem(entry.getKey(), entry.getValue()));
         }
         return rs;
+    }
+
+    public Deployment createDeployment()
+    {
+        return new Deployment(name.get(), bundle.get(), config);
+    }
+
+    public boolean isReady()
+    {
+        return this.name.get() != null
+               && this.bundle.get() != null;
     }
 }

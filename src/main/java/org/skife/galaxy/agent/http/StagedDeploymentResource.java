@@ -1,6 +1,9 @@
 package org.skife.galaxy.agent.http;
 
 import com.sun.jersey.api.view.Viewable;
+import org.skife.galaxy.agent.Agent;
+import org.skife.galaxy.agent.Deployment;
+import org.skife.galaxy.agent.Slot;
 
 import javax.inject.Inject;
 import javax.ws.rs.FormParam;
@@ -11,6 +14,7 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriBuilder;
 import javax.ws.rs.core.UriInfo;
+import java.io.IOException;
 import java.net.URI;
 import java.util.UUID;
 
@@ -19,12 +23,14 @@ public class StagedDeploymentResource
 {
     private final UriInfo ui;
     private final ScratchSpace scratch;
+    private final Agent agent;
 
     @Inject
-    public StagedDeploymentResource(UriInfo ui, ScratchSpace scratch)
+    public StagedDeploymentResource(UriInfo ui, ScratchSpace scratch, Agent agent)
     {
         this.ui = ui;
         this.scratch = scratch;
+        this.agent = agent;
     }
 
     @GET
@@ -33,6 +39,18 @@ public class StagedDeploymentResource
         return new Viewable("index.html", new Object() {
             StagedDeployment deployment = scratch.getStagedDeployment(id);
         });
+    }
+
+    @POST
+    @Path("deploy")
+    public Response deploy(@PathParam("id") UUID id) throws IOException
+    {
+        StagedDeployment sd = scratch.getStagedDeployment(id);
+        Deployment d = sd.createDeployment();
+        Slot s = agent.deploy(d);
+        URI slot_uri = UriBuilder.fromUri(ui.getBaseUri()).path(SlotResource.class).build(s.getId());
+
+        return Response.seeOther(slot_uri).build();
     }
 
     @POST
