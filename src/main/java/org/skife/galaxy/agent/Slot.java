@@ -75,7 +75,7 @@ public class Slot
         UUID uuid = UUID.randomUUID();
         File deployment_dir = new File(root, uuid.toString());
         Preconditions.checkState(deployment_dir.mkdirs(), "Unable to create deployment directory");
-        File tmp_tarball = File.createTempFile("pleides", ".tar.gz");
+        File tmp_tarball = File.createTempFile("sculptor", ".tar.gz");
 
         final URL url = d.getTarballUrl().toURL();
         Files.copy(new InputSupplier<InputStream>()
