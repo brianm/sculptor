@@ -66,7 +66,7 @@ public class JettyTest
     @Ignore
     public void testRun() throws Exception
     {
-        Server server = new Server(25365);
+        Server server = new Server(18181);
 
         ServletContextHandler handler = new ServletContextHandler(ServletContextHandler.NO_SESSIONS);
         handler.addEventListener(new GuiceAgentServletModule(new File("/tmp/sculptor"),

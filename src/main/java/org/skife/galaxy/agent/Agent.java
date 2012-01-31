@@ -66,7 +66,9 @@ public class Agent
 
     public Slot deploy(Deployment d) throws IOException, CommandFailedException
     {
-        Slot s = Slot.deploy(this.root, d, getEnvironmentConfig());
+        Map<String, URI> config = Maps.newHashMap(getEnvironmentConfig());
+        config.putAll(d.getConfiguration());
+        Slot s = Slot.deploy(this.root, d, config);
         this.slots.put(s.getId(), s);
         return s;
     }

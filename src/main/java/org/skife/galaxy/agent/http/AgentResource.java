@@ -99,7 +99,7 @@ public class AgentResource
     {
         agent.addEnvironmentConfiguration(path, url);
         URI redirect = UriBuilder.fromUri(UriBuilder.fromResource(AgentResource.class).build()).build();
-        return Responses.viewableCreatedWithRedirectTo(redirect);
+        return Response.seeOther(redirect).build();
     }
 
     @POST
@@ -110,14 +110,14 @@ public class AgentResource
         UUID dep_id = UUID.randomUUID();
         final URI dep_uri = UriBuilder.fromResource(StagedDeploymentResource.class).build(dep_id);
         scratch.stageDeployment(dep_id);
-        return Responses.viewableCreatedWithRedirectTo(dep_uri);
+        return Response.seeOther(dep_uri).build();
     }
 
     @POST
     @Path("deploy")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public Response deployJson(DeployJson json) throws IOException
+    public Response deploy(DeployJson json) throws IOException
     {
         final Slot s = agent.deploy(new Deployment(json.name, json.url, json.configuration));
         final URI slot_uri = UriBuilder.fromResource(SlotResource.class)
