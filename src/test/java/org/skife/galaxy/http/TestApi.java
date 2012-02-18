@@ -1,17 +1,13 @@
 package org.skife.galaxy.http;
 
 import com.google.common.base.Objects;
-import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 import com.google.common.io.Files;
 import com.ning.http.client.AsyncCompletionHandler;
-import com.ning.http.client.AsyncHandler;
 import com.ning.http.client.AsyncHttpClient;
-import com.ning.http.client.RequestBuilder;
+import com.ning.http.client.AsyncHttpClientConfig;
 import com.ning.http.client.Response;
 import org.apache.commons.io.FileUtils;
 import org.codehaus.jackson.map.DeserializationConfig;
@@ -39,10 +35,9 @@ import java.util.logging.LogManager;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.fail;
-import static org.junit.matchers.JUnitMatchers.containsString;
 import static org.skife.galaxy.TestingHelpers.*;
 
-public class JettyTest
+public class TestApi
 {
     static {
         java.util.logging.Logger javaRootLogger = LogManager.getLogManager().getLogger("");
@@ -58,7 +53,9 @@ public class JettyTest
     @Before
     public void setUp() throws Exception
     {
-        this.http = new AsyncHttpClient();
+        this.http = new AsyncHttpClient(new AsyncHttpClientConfig.Builder()
+                                            .setFollowRedirects(true)
+                                            .build());
         tmp = Files.createTempDir();
         server = new Server(25365);
 
@@ -80,22 +77,8 @@ public class JettyTest
     }
 
     @Test
-    public void testServerRuns() throws Exception
+    public void testDeploy() throws Exception
     {
-
-        String body = http.executeRequest(new RequestBuilder()
-                                              .setHeader("Accept", "text/html")
-                                              .setUrl("http://localhost:25365/")
-                                              .build()).get().getResponseBody();
-
-        assertThat(body, containsString(tmp.getAbsolutePath()));
-        assertThat(body, matches("<html>\\s*<head>"));
-    }
-
-    @Test
-    public void testJsonDeploy() throws Exception
-    {
-
         // Find deployment url/action
         _Root root = http.prepareGet("http://localhost:25365/")
                          .setHeader("accept", MediaType.APPLICATION_JSON)
@@ -104,7 +87,6 @@ public class JettyTest
         _Action deploy = Iterables.find(root._actions, fieldEquals("rel", "deploy"));
         assertThat(deploy.method, equalTo("POST"));
         assertThat(deploy.params.keySet(), equalTo((Set<String>) ImmutableSet.of("name", "url", "configuration")));
-
 
         // perform a deployment against it
         Response r = http.preparePost(deploy.uri)
@@ -115,14 +97,15 @@ public class JettyTest
 
         assertThat(r.getStatusCode(), isHttpSuccess());
         _Container c = mapper.readValue(r.getResponseBody(), _Container.class);
-        assertThat(c.slot.deployDir, exists());
-        assertThat(file(c.slot.deployDir, "env", "config.properties"), exists());
+        assertThat(c.slot.deployDir, isExistingFile());
+        assertThat(file(c.slot.deployDir, "env", "config.properties"), isExistingFile());
         assertThat(c.slot.stopped, equalTo(true));
     }
 
     @Test
     public void testStartDeployedThing() throws Exception
     {
+        // find the deployment action
         _Root root = http.prepareGet("http://localhost:25365/")
                          .setHeader("accept", MediaType.APPLICATION_JSON)
                          .execute(new JsonMappingAsyncHandler<_Root>(_Root.class)).get();
@@ -135,18 +118,23 @@ public class JettyTest
                            .execute(new JsonMappingAsyncHandler<_Container>(_Container.class))
                            .get();
 
+        // start the deployed thing
         _Action start = Iterables.find(c._actions, fieldEquals("rel", "start"));
-
         assertThat(start.method, equalTo("POST"));
         assertThat(start.params, equalTo(Collections.<String, String>emptyMap()));
 
         Response start_response = http.preparePost(start.uri)
-                                      .execute().get();
-        assertThat(start_response.getStatusCode(), equalTo(javax.ws.rs.core.Response.Status.SEE_OTHER.getStatusCode()));
-        String slot_uri = start_response.getHeader("Location");
+                                      .execute()
+                                      .get();
 
+        // http client does not follow redirects correctly, so we
+        // need to hardcode following the see other :-(
+        assertThat(start_response.getStatusCode(), isHttpRedirect());
+        String slot_uri = start_response.getHeader("location");
+
+        // check to make sure the deployed thing is now running
         _Container started = http.prepareGet(slot_uri)
-                                 .setHeader("Accept", MediaType.APPLICATION_JSON)
+                                 .setHeader("accept", MediaType.APPLICATION_JSON)
                                  .execute(new JsonMappingAsyncHandler<_Container>(_Container.class))
                                  .get();
         assertThat(started.slot.running, equalTo(true));

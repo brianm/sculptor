@@ -7,6 +7,7 @@ import org.hamcrest.Matcher;
 import org.hamcrest.StringDescription;
 
 import javax.annotation.Nullable;
+import javax.ws.rs.core.Response;
 import java.io.File;
 import java.util.regex.Pattern;
 
@@ -34,6 +35,27 @@ public class TestingHelpers
             {
                 Integer val = (Integer) item;
                 return val >= 200 && val < 300;
+            }
+
+            @Override
+            public void describeTo(Description d)
+            {
+                d.appendText("a value between 200 and 299");
+            }
+        };
+    }
+
+    public static Matcher<Integer> isHttpRedirect()
+    {
+        return new BaseMatcher<Integer>()
+        {
+            @Override
+            public boolean matches(Object item)
+            {
+                Integer val = (Integer) item;
+                return val == Response.Status.SEE_OTHER.getStatusCode()
+                    || val == Response.Status.MOVED_PERMANENTLY.getStatusCode()
+                    || val ==  302; // Response.Status.FOUND.getStatusCode();
             }
 
             @Override
@@ -93,7 +115,7 @@ public class TestingHelpers
         };
     }
 
-    public static Matcher<File> exists()
+    public static Matcher<File> isExistingFile()
     {
         return new BaseMatcher<File>()
         {

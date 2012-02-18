@@ -2,7 +2,6 @@ package org.skife.galaxy;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.io.Files;
-import com.sun.corba.se.impl.interceptors.SlotTableStack;
 import org.apache.commons.io.FileUtils;
 import org.junit.After;
 import org.junit.Before;
@@ -12,7 +11,6 @@ import org.skife.galaxy.agent.Deployment;
 import org.skife.galaxy.agent.Slot;
 import org.skife.galaxy.agent.Status;
 
-import javax.annotation.concurrent.Immutable;
 import java.io.File;
 import java.net.URI;
 import java.util.Collections;
@@ -20,7 +18,7 @@ import java.util.Collections;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.not;
 import static org.junit.Assert.assertThat;
-import static org.skife.galaxy.TestingHelpers.exists;
+import static org.skife.galaxy.TestingHelpers.isExistingFile;
 import static org.skife.galaxy.TestingHelpers.file;
 
 
@@ -51,9 +49,9 @@ public class AgentTest
     {
         Slot s = agent.deploy(d);
         File deploy_dir = file(s.getRoot(), "deploy");
-        assertThat(deploy_dir, exists());
-        assertThat(file(deploy_dir, "bin"), exists());
-        assertThat(file(deploy_dir, "bin", "control"), exists());
+        assertThat(deploy_dir, isExistingFile());
+        assertThat(file(deploy_dir, "bin"), isExistingFile());
+        assertThat(file(deploy_dir, "bin", "control"), isExistingFile());
     }
 
     @Test
@@ -61,7 +59,7 @@ public class AgentTest
     {
         Slot s = agent.deploy(d);
         s.start();
-        assertThat(file(s.getRoot(), "deploy", "running"), exists());
+        assertThat(file(s.getRoot(), "deploy", "running"), isExistingFile());
     }
 
     @Test
@@ -70,7 +68,7 @@ public class AgentTest
         Slot s = agent.deploy(d);
         s.start();
         s.stop();
-        assertThat(file(s.getRoot(), "deploy", "running"), not(exists()));
+        assertThat(file(s.getRoot(), "deploy", "running"), not(isExistingFile()));
     }
 
     @Test
@@ -100,7 +98,7 @@ public class AgentTest
 
         Slot s = agent.deploy(d);
         File deployed = file(s.getDeployDir(), "env", "runtime.properties");
-        assertThat(deployed, exists());
+        assertThat(deployed, isExistingFile());
     }
 
     @Test
@@ -115,7 +113,7 @@ public class AgentTest
         Slot s = agent.deploy(d2);
         File dep_conf = file(s.getDeployDir(), "env", "deploy.conf");
 
-        assertThat(dep_conf, exists());
+        assertThat(dep_conf, isExistingFile());
     }
 
 }
