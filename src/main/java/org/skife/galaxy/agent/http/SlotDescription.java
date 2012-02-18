@@ -27,19 +27,19 @@ class SlotDescription
         _links = asList(new Link("self",
                                  slot_uri,
                                  "slot resource"));
-        URI start_uri = UriBuilder.fromUri(ui.getRequestUri())
+        URI start_uri = UriBuilder.fromUri(slot_uri)
                                   .path(SlotResource.class, "start")
                                   .build(slot.getId());
 
-        URI stop_uri = UriBuilder.fromUri(ui.getRequestUri())
+        URI stop_uri = UriBuilder.fromUri(slot_uri)
                                  .path(SlotResource.class, "stop")
                                  .build(slot.getId());
 
-        URI restart_uri = UriBuilder.fromUri(ui.getRequestUri())
+        URI restart_uri = UriBuilder.fromUri(slot_uri)
                                     .path(SlotResource.class, "stop")
                                     .build(slot.getId());
 
-        URI clear_uri = UriBuilder.fromUri(ui.getRequestUri())
+        URI clear_uri = UriBuilder.fromUri(slot_uri)
                                   .path(SlotResource.class, "stop")
                                   .build(slot.getId());
 

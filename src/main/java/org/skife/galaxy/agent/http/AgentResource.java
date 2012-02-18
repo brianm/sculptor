@@ -61,7 +61,8 @@ public class AgentResource
         final URI deploy = ui.getAbsolutePathBuilder().path(AgentResource.class, "deploy").build();
         final List<Action> acts = asList(new Action("deploy", "POST", deploy,
                                                     ImmutableMap.of("name", "Service name",
-                                                                    "url", "Deployment bundle URL")));
+                                                                    "url", "Deployment bundle URL",
+                                                                    "configuration", "Object where keys are paths inside deployment, and values are URLs to resources")));
         final Link json_link = new Link("alternate", authoritative, "JSON URL");
         return Response.ok()
                        .header("Link", json_link.toString())

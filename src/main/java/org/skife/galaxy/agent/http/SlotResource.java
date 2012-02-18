@@ -23,7 +23,7 @@ import java.util.UUID;
 public class SlotResource
 {
     private final UriInfo ui;
-    private final Agent agent;
+    private final Agent   agent;
 
     @Inject
     public SlotResource(UriInfo ui, Agent agent)
@@ -46,7 +46,8 @@ public class SlotResource
     {
         final Slot s = agent.getSlot(uuid);
         final Status stat = s.status();
-        return new Viewable("view_slot.html", new Object() {
+        return new Viewable("view_slot.html", new Object()
+        {
             URI start = ui.getAbsolutePathBuilder().path(SlotResource.class, "start").build(uuid);
             URI stop = ui.getAbsolutePathBuilder().path(SlotResource.class, "stop").build(uuid);
             URI restart = ui.getAbsolutePathBuilder().path(SlotResource.class, "restart").build(uuid);
@@ -63,7 +64,8 @@ public class SlotResource
     {
         Slot slot = agent.getSlot(uuid);
         slot.start();
-        return Response.seeOther(UriBuilder.fromResource(SlotResource.class).build(uuid)).build();
+        return Response.seeOther(UriBuilder.fromResource(SlotResource.class).build(uuid))
+                       .build();
     }
 
     @POST
@@ -72,7 +74,8 @@ public class SlotResource
     {
         Slot slot = agent.getSlot(uuid);
         slot.stop();
-        return Response.seeOther(UriBuilder.fromResource(SlotResource.class).build(uuid)).build();
+        return Response.seeOther(UriBuilder.fromResource(SlotResource.class).build(uuid))
+                       .build();
     }
 
     @POST
@@ -81,7 +84,8 @@ public class SlotResource
     {
         Slot slot = agent.getSlot(uuid);
         slot.restart();
-        return Response.seeOther(UriBuilder.fromResource(SlotResource.class).build(uuid)).build();
+        return Response.seeOther(UriBuilder.fromResource(SlotResource.class).build(uuid))
+                       .build();
     }
 
     @POST
@@ -89,14 +93,17 @@ public class SlotResource
     public Response clear(final @PathParam("uuid") UUID uuid)
     {
         agent.clear(uuid);
-        return Response.seeOther(UriBuilder.fromResource(AgentResource.class).build()).build();
+        return Response.seeOther(UriBuilder.fromResource(AgentResource.class).build())
+                       .build();
     }
 
     @POST
     @Path("update-config")
     public Response updateConfig(final @PathParam("uuid") UUID uuid) throws IOException
     {
-        agent.getSlot(uuid).updateConfig();
-        return Response.seeOther(UriBuilder.fromResource(SlotResource.class).build(uuid)).build();
+        Slot slot = agent.getSlot(uuid);
+        slot.updateConfig();
+        return Response.seeOther(UriBuilder.fromResource(SlotResource.class).build(uuid))
+                       .build();
     }
 }
