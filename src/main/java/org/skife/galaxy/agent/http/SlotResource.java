@@ -96,7 +96,7 @@ public class SlotResource
     @Path("update-config")
     public Response updateConfig(final @PathParam("uuid") UUID uuid) throws IOException
     {
-        Status s = agent.getSlot(uuid).updateConfig(agent.getEnvironmentConfig());
+        agent.getSlot(uuid).updateConfig();
         return Response.seeOther(UriBuilder.fromResource(SlotResource.class).build(uuid)).build();
     }
 }

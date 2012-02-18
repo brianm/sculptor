@@ -1,6 +1,8 @@
 package org.skife.galaxy;
 
+import com.google.common.collect.ImmutableMap;
 import com.google.common.io.Files;
+import com.sun.corba.se.impl.interceptors.SlotTableStack;
 import org.apache.commons.io.FileUtils;
 import org.junit.After;
 import org.junit.Before;
@@ -10,6 +12,7 @@ import org.skife.galaxy.agent.Deployment;
 import org.skife.galaxy.agent.Slot;
 import org.skife.galaxy.agent.Status;
 
+import javax.annotation.concurrent.Immutable;
 import java.io.File;
 import java.net.URI;
 import java.util.Collections;
@@ -98,6 +101,21 @@ public class AgentTest
         Slot s = agent.deploy(d);
         File deployed = file(s.getDeployDir(), "env", "runtime.properties");
         assertThat(deployed, exists());
+    }
+
+    @Test
+    public void testDeploymentConfig() throws Exception
+    {
+        File cfg = new File("src/test/resources/some_config.properties");
+        agent.addEnvironmentConfiguration("/env/runtime.properties", cfg.toURI());
+
+        File tarball = new File("src/test/resources/echo.tar.gz");
+        Deployment d2 = new Deployment("test", tarball.toURI(), ImmutableMap.of("/env/deploy.conf",
+                                                                                cfg.toURI()));
+        Slot s = agent.deploy(d2);
+        File dep_conf = file(s.getDeployDir(), "env", "deploy.conf");
+
+        assertThat(dep_conf, exists());
     }
 
 }

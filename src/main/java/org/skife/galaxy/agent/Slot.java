@@ -5,24 +5,30 @@ import com.google.common.base.Preconditions;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
+import com.google.common.collect.Maps;
 import com.google.common.io.Files;
 import com.google.common.io.InputSupplier;
 import org.apache.commons.io.FileUtils;
 import org.skife.galaxy.agent.command.Command;
 import org.skife.galaxy.agent.command.CommandFailedException;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 import java.net.URL;
+import java.util.Date;
 import java.util.Map;
+import java.util.Properties;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
 public class Slot
 {
     private final URI    bundleUrl;
+    private final Map<String, URI> config;
     private final String name;
     private final File   root;
     private final File   deployDir;
@@ -44,11 +50,13 @@ public class Slot
 
     public Slot(UUID uuid,
                 URI bundle,
+                Map<String, URI> config,
                 String name,
                 File path) throws IOException
     {
         this.id = uuid;
         this.bundleUrl = bundle;
+        this.config = config;
         this.name = name;
         this.root = path;
         this.deployDir = new File(path, "deploy");
@@ -70,7 +78,7 @@ public class Slot
         return String.format("<Slot %s>", root);
     }
 
-    public static Slot deploy(File root, Deployment d, Map<String, URI> envFiles) throws IOException
+    public static Slot deploy(File root, Deployment d, Map<String, URI> config) throws IOException
     {
         UUID uuid = UUID.randomUUID();
         File deployment_dir = new File(root, uuid.toString());
@@ -101,7 +109,21 @@ public class Slot
         Files.write(uuid.toString(), new File(deployment_dir, "slot_id"), Charsets.UTF_8);
         Files.write(d.getTarballUrl().toString(), new File(deployment_dir, "bundle_url"), Charsets.UTF_8);
 
-        for (final Map.Entry<String, URI> entry : envFiles.entrySet()) {
+        // save configuration map
+        Properties props = new Properties();
+        for (Map.Entry<String, URI> entry : config.entrySet()) {
+            props.put(entry.getKey(), entry.getValue().toString());
+        }
+        File config_props = new File(deployment_dir, "config.properties");
+        FileOutputStream config_out = new FileOutputStream(config_props);
+        try {
+            props.store(config_out, new Date().toString());
+        }
+        finally {
+            config_out.close();
+        }
+
+        for (final Map.Entry<String, URI> entry : config.entrySet()) {
             File target = new File(dir, entry.getKey());
             if (!target.getParentFile().exists()) {
                 Preconditions.checkArgument(target.getParentFile().mkdirs(),
@@ -119,7 +141,7 @@ public class Slot
 
         Files.move(dir, new File(deployment_dir, "deploy"));
 
-        return new Slot(uuid, d.getTarballUrl(), d.getName(), deployment_dir);
+        return new Slot(uuid, d.getTarballUrl(), config, d.getName(), deployment_dir);
 
     }
 
@@ -128,8 +150,22 @@ public class Slot
         String name = Files.readFirstLine(new File(root, "name"), Charsets.UTF_8);
         String uuid_s = Files.readFirstLine(new File(root, "slot_id"), Charsets.UTF_8);
         String bundle_source = Files.readFirstLine(new File(root, "bundle_url"), Charsets.UTF_8);
+        Properties config_props = new Properties();
+        BufferedReader in = Files.newReader(new File(root, "config.properties"), Charsets.UTF_8);
+        try {
+            config_props.load(in);
+        }
+        finally {
+            in.close();
+        }
+        Map<String, URI> config = Maps.newLinkedHashMap();
+        for (Map.Entry<Object, Object> entry : config_props.entrySet()) {
+            config.put(String.valueOf(entry.getKey()), URI.create(String.valueOf(entry.getValue())));
+        }
+
         return new Slot(UUID.fromString(uuid_s),
                         URI.create(bundle_source),
+                        config,
                         name,
                         root);
     }
@@ -227,9 +263,9 @@ public class Slot
         }
     }
 
-    public Status updateConfig(Map<String, URI> envFiles) throws IOException
+    public Status updateConfig() throws IOException
     {
-        for (final Map.Entry<String, URI> entry : envFiles.entrySet()) {
+        for (final Map.Entry<String, URI> entry : config.entrySet()) {
             File target = new File(deployDir, entry.getKey());
             if (!target.getParentFile().exists()) {
                 Preconditions.checkArgument(target.getParentFile().mkdirs(),
