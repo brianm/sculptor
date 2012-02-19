@@ -193,20 +193,21 @@ public class TestApi
                                             .execute(new JsonMappingAsyncHandler<_Root>(_Root.class)).get()._actions,
                                         fieldEquals("rel", "deploy"));
 
-        _DeployedSlot slot = http.preparePost(deploy.uri)
-                                 .setHeader("content-type", MediaType.APPLICATION_JSON)
-                                 .setBody(mapper.writeValueAsString(new _Deployment()))
-                                 .execute(new JsonMappingAsyncHandler<_DeployedSlot>(_DeployedSlot.class))
-                                 .get();
+        _DeployedSlot from_deploy = http.preparePost(deploy.uri)
+                                        .setHeader("content-type", MediaType.APPLICATION_JSON)
+                                        .setBody(mapper.writeValueAsString(new _Deployment()))
+                                        .execute(new JsonMappingAsyncHandler<_DeployedSlot>(_DeployedSlot.class))
+                                        .get();
 
         _Root root = http.prepareGet("http://localhost:25365/")
                          .setHeader("accept", MediaType.APPLICATION_JSON)
                          .execute(new JsonMappingAsyncHandler<_Root>(_Root.class)).get();
-        assertThat(root.slots.size(), equalTo(1));
-        _DeployedSlot ds = Iterables.getOnlyElement(root.slots);
 
-        _Link ds_self = Iterables.find(ds._links, fieldEquals("rel", "self"));
-        _Link slot_self = Iterables.find(slot._links, fieldEquals("rel", "self"));
+        assertThat(root.slots.size(), equalTo(1));
+        _DeployedSlot from_root = Iterables.getOnlyElement(root.slots);
+
+        _Link ds_self = Iterables.find(from_root._links, fieldEquals("rel", "self"));
+        _Link slot_self = Iterables.find(from_deploy._links, fieldEquals("rel", "self"));
         assertNotNull(ds_self);
         assertEquals(ds_self.uri, slot_self.uri);
     }
