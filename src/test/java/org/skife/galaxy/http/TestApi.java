@@ -206,7 +206,7 @@ public class TestApi
         _DeployedSlot ds = Iterables.getOnlyElement(root.slots);
 
         _Link ds_self = Iterables.find(ds._links, fieldEquals("rel", "self"));
-        _Link slot_self = Iterables.find(ds._links, fieldEquals("rel", "self"));
+        _Link slot_self = Iterables.find(slot._links, fieldEquals("rel", "self"));
         assertNotNull(ds_self);
         assertEquals(ds_self.uri, slot_self.uri);
     }
