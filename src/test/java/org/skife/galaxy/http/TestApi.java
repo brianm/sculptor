@@ -16,7 +16,9 @@ import org.eclipse.jetty.server.DispatcherType;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.junit.After;
+import org.junit.AfterClass;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.skife.galaxy.agent.http.GuiceAgentServletModule;
@@ -33,6 +35,7 @@ import java.util.logging.Handler;
 import java.util.logging.LogManager;
 
 import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.fail;
 import static org.skife.galaxy.TestingHelpers.*;
@@ -46,19 +49,13 @@ public class TestApi
         }
     }
 
-    private AsyncHttpClient http;
-    private Server          server;
-    private File            tmp;
+    private static AsyncHttpClient http   = new AsyncHttpClient();
+    private static Server          server = new Server(25365);
+    private static File            tmp    = Files.createTempDir();
 
-    @Before
-    public void setUp() throws Exception
+    @BeforeClass
+    public static void setUp() throws Exception
     {
-        this.http = new AsyncHttpClient(new AsyncHttpClientConfig.Builder()
-                                            .setFollowRedirects(true)
-                                            .build());
-        tmp = Files.createTempDir();
-        server = new Server(25365);
-
         ServletContextHandler handler = new ServletContextHandler(ServletContextHandler.NO_SESSIONS);
         handler.addEventListener(new GuiceAgentServletModule(tmp, true));
         handler.addFilter(com.google.inject.servlet.GuiceFilter.class, "/*", EnumSet.allOf(DispatcherType.class));
@@ -67,10 +64,10 @@ public class TestApi
         server.start();
     }
 
-    @After
-    public void tearDown() throws Exception
+    @AfterClass
+    public static void tearDown() throws Exception
     {
-        this.http.close();
+        http.close();
         server.stop();
         FileUtils.deleteDirectory(tmp);
 
@@ -91,12 +88,12 @@ public class TestApi
         // perform a deployment against it
         Response r = http.preparePost(deploy.uri)
                          .setHeader("content-type", MediaType.APPLICATION_JSON)
-                         .setBody(mapper.writeValueAsString(new _Deploy()))
+                         .setBody(mapper.writeValueAsString(new _Deployment()))
                          .execute()
                          .get();
 
         assertThat(r.getStatusCode(), isHttpSuccess());
-        _Container c = mapper.readValue(r.getResponseBody(), _Container.class);
+        _DeployedSlot c = mapper.readValue(r.getResponseBody(), _DeployedSlot.class);
         assertThat(c.slot.deployDir, isExistingFile());
         assertThat(file(c.slot.deployDir, "env", "config.properties"), isExistingFile());
         assertThat(c.slot.stopped, equalTo(true));
@@ -105,18 +102,18 @@ public class TestApi
     @Test
     public void testStartDeployedThing() throws Exception
     {
-        // find the deployment action
+        // find the deployment url
         _Root root = http.prepareGet("http://localhost:25365/")
                          .setHeader("accept", MediaType.APPLICATION_JSON)
                          .execute(new JsonMappingAsyncHandler<_Root>(_Root.class)).get();
         _Action deploy = Iterables.find(root._actions, fieldEquals("rel", "deploy"));
 
         // perform a deployment against it
-        _Container c = http.preparePost(deploy.uri)
-                           .setHeader("content-type", MediaType.APPLICATION_JSON)
-                           .setBody(mapper.writeValueAsString(new _Deploy()))
-                           .execute(new JsonMappingAsyncHandler<_Container>(_Container.class))
-                           .get();
+        _DeployedSlot c = http.preparePost(deploy.uri)
+                              .setHeader("content-type", MediaType.APPLICATION_JSON)
+                              .setBody(mapper.writeValueAsString(new _Deployment()))
+                              .execute(new JsonMappingAsyncHandler<_DeployedSlot>(_DeployedSlot.class))
+                              .get();
 
         // start the deployed thing
         _Action start = Iterables.find(c._actions, fieldEquals("rel", "start"));
@@ -133,11 +130,60 @@ public class TestApi
         String slot_uri = start_response.getHeader("location");
 
         // check to make sure the deployed thing is now running
-        _Container started = http.prepareGet(slot_uri)
-                                 .setHeader("accept", MediaType.APPLICATION_JSON)
-                                 .execute(new JsonMappingAsyncHandler<_Container>(_Container.class))
-                                 .get();
+        _DeployedSlot started = http.prepareGet(slot_uri)
+                                    .setHeader("accept", MediaType.APPLICATION_JSON)
+                                    .execute(new JsonMappingAsyncHandler<_DeployedSlot>(_DeployedSlot.class))
+                                    .get();
         assertThat(started.slot.running, equalTo(true));
+    }
+
+    @Test
+    public void testDeployBundleThatDoesNotExist() throws Exception
+    {
+        // Find deployment url/action
+        _Root root = http.prepareGet("http://localhost:25365/")
+                         .setHeader("accept", MediaType.APPLICATION_JSON)
+                         .execute(new JsonMappingAsyncHandler<_Root>(_Root.class)).get();
+
+        _Action deploy = Iterables.find(root._actions, fieldEquals("rel", "deploy"));
+        assertThat(deploy.method, equalTo("POST"));
+        assertThat(deploy.params.keySet(), equalTo((Set<String>) ImmutableSet.of("name", "url", "configuration")));
+
+
+        _Deployment d = new _Deployment();
+        d.url = URI.create("file:///tmp/does_not_exist.tar.gz");
+        // perform a deployment against it
+        Response r = http.preparePost(deploy.uri)
+                         .setHeader("content-type", MediaType.APPLICATION_JSON)
+                         .setBody(mapper.writeValueAsString(d))
+                         .execute()
+                         .get();
+
+        assertThat(r.getStatusCode(), isHttpBadRequest());
+    }
+
+    @Test
+    public void testDeployBundleThatDoesNotExistOverHttp() throws Exception
+    {
+        // Find deployment url/action
+        _Root root = http.prepareGet("http://localhost:25365/")
+                         .setHeader("accept", MediaType.APPLICATION_JSON)
+                         .execute(new JsonMappingAsyncHandler<_Root>(_Root.class)).get();
+
+        _Action deploy = Iterables.find(root._actions, fieldEquals("rel", "deploy"));
+        assertThat(deploy.method, equalTo("POST"));
+        assertThat(deploy.params.keySet(), equalTo((Set<String>) ImmutableSet.of("name", "url", "configuration")));
+
+        _Deployment d = new _Deployment();
+        d.url = URI.create("http://localhost:25365/kjhasdjkhasdjkhasdhasdjkh");
+        // perform a deployment against it
+        Response r = http.preparePost(deploy.uri)
+                         .setHeader("content-type", MediaType.APPLICATION_JSON)
+                         .setBody(mapper.writeValueAsString(d))
+                         .execute()
+                         .get();
+
+        assertThat(r.getStatusCode(), isHttpBadRequest());
     }
 
     @Test
@@ -158,7 +204,7 @@ public class TestApi
         public List<_Action> _actions;
     }
 
-    public static class _Deploy
+    public static class _Deployment
     {
         public URI              url           = new File("src/test/resources/echo.tar.gz").toURI();
         public String           name          = "test deployment";
@@ -167,7 +213,7 @@ public class TestApi
                                                                     .toURI());
     }
 
-    public static class _Container
+    public static class _DeployedSlot
     {
         public List<_Link>   links;
         public List<_Action> _actions;

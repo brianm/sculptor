@@ -27,12 +27,12 @@ import java.util.concurrent.TimeUnit;
 
 public class Slot
 {
-    private final URI    bundleUrl;
+    private final URI              bundleUrl;
     private final Map<String, URI> config;
-    private final String name;
-    private final File   root;
-    private final File   deployDir;
-    private final UUID   id;
+    private final String           name;
+    private final File             root;
+    private final File             deployDir;
+    private final UUID             id;
 
     private static final String KEY = "key";
 
@@ -86,6 +86,7 @@ public class Slot
         File tmp_tarball = File.createTempFile("sculptor", ".tar.gz");
 
         final URL url = d.getTarballUrl().toURL();
+
         Files.copy(new InputSupplier<InputStream>()
         {
             public InputStream getInput() throws IOException

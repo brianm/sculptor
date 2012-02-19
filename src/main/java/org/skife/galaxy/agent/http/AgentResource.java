@@ -1,11 +1,13 @@
 package org.skife.galaxy.agent.http;
 
+import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.sun.jersey.api.view.Viewable;
 import org.skife.galaxy.agent.Agent;
 import org.skife.galaxy.agent.Deployment;
 import org.skife.galaxy.agent.Slot;
+import org.skife.galaxy.http.ErrorReport;
 
 import javax.inject.Inject;
 import javax.ws.rs.Consumes;
@@ -19,6 +21,7 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriBuilder;
 import javax.ws.rs.core.UriInfo;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.URI;
@@ -27,7 +30,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
-import static java.lang.String.format;
 import static java.util.Arrays.asList;
 
 @Path("/")
@@ -118,9 +120,19 @@ public class AgentResource
     @Path("deploy")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public Response deploy(DeployJson json) throws IOException
+    public Response deploy(DeployJson json)
     {
-        final Slot s = agent.deploy(new Deployment(json.name, json.url, json.configuration));
+        final Slot s;
+        try {
+            s = agent.deploy(new Deployment(json.name, json.url, json.configuration));
+        }
+        catch (FileNotFoundException e) {
+            // url which didna exist
+            return Response.status(400).entity(new ErrorReport("url didn't resolve to anything")).build();
+        }
+        catch (IOException e) {
+            throw Throwables.propagate(e);
+        }
         final URI slot_uri = UriBuilder.fromResource(SlotResource.class)
                                        .host(ui.getRequestUri().getHost())
                                        .port(ui.getRequestUri().getPort())

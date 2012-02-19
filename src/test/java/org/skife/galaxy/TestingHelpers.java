@@ -45,6 +45,24 @@ public class TestingHelpers
         };
     }
 
+    public static Matcher<Integer> isHttpBadRequest() {
+        return new BaseMatcher<Integer>()
+        {
+            @Override
+            public boolean matches(Object item)
+            {
+
+                return ((Integer)item) == 400;
+            }
+
+            @Override
+            public void describeTo(Description d)
+            {
+                d.appendText("a value of 400 (bad request)");
+            }
+        };
+    }
+
     public static Matcher<Integer> isHttpRedirect()
     {
         return new BaseMatcher<Integer>()
