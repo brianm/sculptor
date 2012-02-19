@@ -36,8 +36,7 @@ import java.util.logging.LogManager;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.*;
 import static org.skife.galaxy.TestingHelpers.*;
 
 public class TestApi
@@ -187,9 +186,45 @@ public class TestApi
     }
 
     @Test
+    public void testDeployedThingListedAtRoot() throws Exception
+    {
+        _Action deploy = Iterables.find(http.prepareGet("http://localhost:25365/")
+                                            .setHeader("accept", MediaType.APPLICATION_JSON)
+                                            .execute(new JsonMappingAsyncHandler<_Root>(_Root.class)).get()._actions,
+                                        fieldEquals("rel", "deploy"));
+
+        _DeployedSlot slot = http.preparePost(deploy.uri)
+                                 .setHeader("content-type", MediaType.APPLICATION_JSON)
+                                 .setBody(mapper.writeValueAsString(new _Deployment()))
+                                 .execute(new JsonMappingAsyncHandler<_DeployedSlot>(_DeployedSlot.class))
+                                 .get();
+
+        _Root root = http.prepareGet("http://localhost:25365/")
+                         .setHeader("accept", MediaType.APPLICATION_JSON)
+                         .execute(new JsonMappingAsyncHandler<_Root>(_Root.class)).get();
+        assertThat(root.slots.size(), equalTo(1));
+        _DeployedSlot ds = Iterables.getOnlyElement(root.slots);
+
+        _Link ds_self = Iterables.find(ds._links, fieldEquals("rel", "self"));
+        _Link slot_self = Iterables.find(ds._links, fieldEquals("rel", "self"));
+        assertNotNull(ds_self);
+        assertEquals(ds_self.uri, slot_self.uri);
+    }
+
+    @Test
     @Ignore
     public void testRun() throws Exception
     {
+        _Action deploy = Iterables.find(http.prepareGet("http://localhost:25365/")
+                                            .setHeader("accept", MediaType.APPLICATION_JSON)
+                                            .execute(new JsonMappingAsyncHandler<_Root>(_Root.class)).get()._actions,
+                                        fieldEquals("rel", "deploy"));
+        Response r = http.preparePost(deploy.uri)
+                         .setHeader("content-type", MediaType.APPLICATION_JSON)
+                         .setBody(mapper.writeValueAsString(new _Deployment()))
+                         .execute()
+                         .get();
+
         server.join();
     }
 
@@ -201,7 +236,8 @@ public class TestApi
 
     public static class _Root
     {
-        public List<_Action> _actions;
+        public List<_Action>       _actions;
+        public List<_DeployedSlot> slots;
     }
 
     public static class _Deployment
@@ -215,7 +251,7 @@ public class TestApi
 
     public static class _DeployedSlot
     {
-        public List<_Link>   links;
+        public List<_Link>   _links;
         public List<_Action> _actions;
         public _Slot         slot;
     }
