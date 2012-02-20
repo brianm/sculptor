@@ -199,17 +199,20 @@ public class TestApi
                                         .execute(new JsonMappingAsyncHandler<_DeployedSlot>(_DeployedSlot.class))
                                         .get();
 
+        URI self_url = Iterables.find(from_deploy._links, fieldEquals("rel", "self")).uri;
+
         _Root root = http.prepareGet("http://localhost:25365/")
                          .setHeader("accept", MediaType.APPLICATION_JSON)
                          .execute(new JsonMappingAsyncHandler<_Root>(_Root.class)).get();
 
-        assertThat(root.slots.size(), equalTo(1));
-        _DeployedSlot from_root = Iterables.getOnlyElement(root.slots);
+        boolean found_self = false;
+        for (_DeployedSlot slot : root.slots) {
+            for (_Link link : slot._links) {
+                found_self = found_self || link.uri.equals(self_url);
+            }
+        }
 
-        _Link ds_self = Iterables.find(from_root._links, fieldEquals("rel", "self"));
-        _Link slot_self = Iterables.find(from_deploy._links, fieldEquals("rel", "self"));
-        assertNotNull(ds_self);
-        assertEquals(ds_self.uri, slot_self.uri);
+        assertThat(found_self, equalTo(true));
     }
 
     @Test
