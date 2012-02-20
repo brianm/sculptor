@@ -2,10 +2,13 @@ package org.skife.galaxy.agent;
 
 import com.google.common.base.Charsets;
 import com.google.common.base.Preconditions;
+import com.google.common.base.Suppliers;
+import com.google.common.base.Throwables;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import com.google.common.collect.Maps;
+import com.google.common.io.ByteStreams;
 import com.google.common.io.Files;
 import com.google.common.io.InputSupplier;
 import org.apache.commons.io.FileUtils;
@@ -13,17 +16,22 @@ import org.skife.galaxy.agent.command.Command;
 import org.skife.galaxy.agent.command.CommandFailedException;
 
 import java.io.BufferedReader;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 import java.net.URL;
+import java.text.SimpleDateFormat;
+import java.util.Arrays;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.Map;
 import java.util.Properties;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
 
 public class Slot
 {
@@ -184,15 +192,36 @@ public class Slot
     public Status start()
     {
         File control = new File(new File(deployDir, "bin"), "control");
+        File log_dir = new File(root, "logs");
+        if (!log_dir.exists()) { Preconditions.checkState(log_dir.mkdir(), "unable to create log dir"); }
+
+        File log = new File(log_dir,  new SimpleDateFormat("yyyy-MM-dd_HH-mm-ss").format(new Date()));
+
+
         try {
-            new Command(control.getAbsolutePath(), "start")
-                .setSuccessfulExitCodes(0)
-                .setTimeLimit(10, TimeUnit.SECONDS)
-                .execute(Agent.EXEC_POOL);
-            return Status.success();
+            Process p = new ProcessBuilder(control.getAbsolutePath(), "start")
+                .directory(deployDir)
+                .redirectErrorStream(true)
+                .start();
+
+            FileOutputStream out = new FileOutputStream(log,  true /* append = true */);
+            InputStream in = p.getInputStream();
+            ByteStreams.copy(in, out);
+            int exit = p.waitFor() ;
+            out.close();
+
+            if (exit == 0) {
+                return Status.success();
+            }
+            else {
+                return Status.failure(String.format("bin/control start exited with status %d", exit));
+            }
         }
-        catch (CommandFailedException e) {
-            return Status.failure(e.getMessage());
+        catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        catch (InterruptedException e) {
+            throw Throwables.propagate(e);
         }
         finally {
             state.invalidate(KEY);

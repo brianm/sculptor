@@ -41,12 +41,12 @@ import static org.skife.galaxy.TestingHelpers.*;
 
 public class TestApi
 {
-    static {
-        java.util.logging.Logger javaRootLogger = LogManager.getLogManager().getLogger("");
-        for (Handler handler : javaRootLogger.getHandlers()) {
-            javaRootLogger.removeHandler(handler);
-        }
-    }
+//    static {
+//        java.util.logging.Logger javaRootLogger = LogManager.getLogManager().getLogger("");
+//        for (Handler handler : javaRootLogger.getHandlers()) {
+//            javaRootLogger.removeHandler(handler);
+//        }
+//    }
 
     private static AsyncHttpClient http   = new AsyncHttpClient();
     private static Server          server = new Server(25365);
@@ -69,7 +69,6 @@ public class TestApi
         http.close();
         server.stop();
         FileUtils.deleteDirectory(tmp);
-
     }
 
     @Test
@@ -134,6 +133,58 @@ public class TestApi
                                     .execute(new JsonMappingAsyncHandler<_DeployedSlot>(_DeployedSlot.class))
                                     .get();
         assertThat(started.slot.running, equalTo(true));
+    }
+
+    //
+    @Test
+    @Ignore
+    public void testStartApache() throws Exception
+    {
+        // find the deployment url
+        _Root root = http.prepareGet("http://localhost:25365/")
+                         .setHeader("accept", MediaType.APPLICATION_JSON)
+                         .execute(new JsonMappingAsyncHandler<_Root>(_Root.class)).get();
+        _Action deploy = Iterables.find(root._actions, fieldEquals("rel", "deploy"));
+
+        // perform a deployment against it
+        _Deployment d = new _Deployment();
+        d.url = URI.create("file:///Users/brianm/src/galaxified-apache/target/galaxified-apache-0.0.1-SNAPSHOT-x86_64-darwin11.2.0.tar.gz");
+        _DeployedSlot c = http.preparePost(deploy.uri)
+                              .setHeader("content-type", MediaType.APPLICATION_JSON)
+                              .setBody(mapper.writeValueAsString(d))
+                              .execute(new JsonMappingAsyncHandler<_DeployedSlot>(_DeployedSlot.class))
+                              .get();
+
+        // start the deployed thing
+        _Action start = Iterables.find(c._actions, fieldEquals("rel", "start"));
+        assertThat(start.method, equalTo("POST"));
+        assertThat(start.params, equalTo(Collections.<String, String>emptyMap()));
+
+        Response start_response = http.preparePost(start.uri)
+                                      .execute()
+                                      .get();
+
+        // http client does not follow redirects correctly, so we
+        // need to hardcode following the see other :-(
+        assertThat(start_response.getStatusCode(), isHttpRedirect());
+        String slot_uri = start_response.getHeader("location");
+
+        // check to make sure the deployed thing is now running
+        _DeployedSlot started = http.prepareGet(slot_uri)
+                                    .setHeader("accept", MediaType.APPLICATION_JSON)
+                                    .execute(new JsonMappingAsyncHandler<_DeployedSlot>(_DeployedSlot.class))
+                                    .get();
+
+        System.out.println(started.slot.deployDir.getAbsolutePath());
+
+//        Thread.currentThread().join();
+
+        assertThat(started.slot.running, equalTo(true));
+
+        _Action stop = Iterables.find(c._actions, fieldEquals("rel", "stop"));
+        http.preparePost(stop.uri)
+            .execute()
+            .get();
     }
 
     @Test
@@ -223,11 +274,11 @@ public class TestApi
                                             .setHeader("accept", MediaType.APPLICATION_JSON)
                                             .execute(new JsonMappingAsyncHandler<_Root>(_Root.class)).get()._actions,
                                         fieldEquals("rel", "deploy"));
-        Response r = http.preparePost(deploy.uri)
-                         .setHeader("content-type", MediaType.APPLICATION_JSON)
-                         .setBody(mapper.writeValueAsString(new _Deployment()))
-                         .execute()
-                         .get();
+        http.preparePost(deploy.uri)
+            .setHeader("content-type", MediaType.APPLICATION_JSON)
+            .setBody(mapper.writeValueAsString(new _Deployment()))
+            .execute()
+            .get();
 
         server.join();
     }
