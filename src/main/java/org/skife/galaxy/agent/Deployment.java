@@ -1,5 +1,7 @@
 package org.skife.galaxy.agent;
 
+import com.google.common.collect.Maps;
+
 import java.net.URI;
 import java.util.Map;
 
@@ -7,13 +9,15 @@ public class Deployment
 {
     private final String name;
     private final URI tarball;
-    private final Map<String, URI> configuration;
+    private final Map<String, URI> configuration = Maps.newLinkedHashMap();
 
-    public Deployment(String name, URI tarball, Map<String, URI> configuration)
+    public Deployment(String name, URI tarball, Map<String, URI> config)
     {
         this.name = name;
         this.tarball = tarball;
-        this.configuration = configuration;
+        if (config != null) {
+            configuration.putAll(config);
+        }
     }
 
     public Map<String, URI> getConfiguration()
