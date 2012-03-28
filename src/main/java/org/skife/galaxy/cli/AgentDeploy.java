@@ -1,21 +1,29 @@
 package org.skife.galaxy.cli;
 
 import com.google.common.base.Preconditions;
+import com.google.common.base.Predicates;
+import com.google.common.collect.Iterables;
 import com.ning.http.client.AsyncHttpClient;
 import com.ning.http.client.RequestBuilder;
 import com.ning.http.client.Response;
 import org.codehaus.jackson.map.DeserializationConfig;
 import org.codehaus.jackson.map.ObjectMapper;
+import org.codehaus.jackson.map.SerializationConfig;
 import org.iq80.cli.Arguments;
 import org.iq80.cli.Command;
 import org.iq80.cli.Option;
+import org.skife.galaxy.http.JsonMappingAsyncHandler;
 import org.skife.galaxy.rep.Action;
+import org.skife.galaxy.rep.AgentDescription;
+import org.skife.galaxy.rep.SlotDescription;
 
 import javax.ws.rs.core.MediaType;
 import java.io.File;
 import java.net.URI;
 import java.util.List;
 import java.util.concurrent.Callable;
+
+import static org.skife.galaxy.base.MorePredicates.beanPropertyEquals;
 
 @Command(name = "deploy", description = "Deploy tarball to an agent")
 public class AgentDeploy implements Callable<Void>
@@ -43,28 +51,25 @@ public class AgentDeploy implements Callable<Void>
 
         ObjectMapper mapper = new ObjectMapper();
         mapper.configure(DeserializationConfig.Feature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+        mapper.configure(SerializationConfig.Feature.INDENT_OUTPUT, true);
+
         AsyncHttpClient http = new AsyncHttpClient();
         try {
-            Response r = http.executeRequest(new RequestBuilder().setUrl(agentUri.toString())
-                                                                 .setHeader("Accept", MediaType.APPLICATION_JSON)
-                                                                 .build()).get();
-            RootBody root = mapper.readValue(r.getResponseBody(), RootBody.class);
-            Action deploy = null;
-            for (Action candidate : root._actions) {
-                if ("deploy".equals(candidate.getRel())) {
-                    deploy = candidate;
-                }
-            }
-            Preconditions.checkNotNull(deploy, "No deploy action found at %s", agentUri);
-            assert deploy != null;
-            r = http.executeRequest(new RequestBuilder(deploy.getMethod())
-                                        .setUrl(deploy.getUri().toString())
-                                        .setHeader("Content-Type", "application/json")
-                                        .setBody(mapper.writeValueAsString(new PostBody(bundleUri.toString(), name)))
-                                        .build()).get();
+            AgentDescription root = http.prepareGet(agentUri.toString())
+                                        .setHeader("accept", MediaType.APPLICATION_JSON)
+                                        .execute(new JsonMappingAsyncHandler<AgentDescription>(AgentDescription.class))
+                                        .get();
 
-            String location = r.getHeader("Location");
-            System.out.println(r.getResponseBody());
+            Action deploy = Iterables.find(root.getActions(), beanPropertyEquals("rel", "deploy"));
+            Preconditions.checkNotNull(deploy, "No deploy action found at %s", agentUri);
+
+            SlotDescription slot = http.preparePost(deploy.getUri().toString())
+                                       .setHeader("content-type", MediaType.APPLICATION_JSON)
+                                       .setBody(mapper.writeValueAsString(new PostBody(bundleUri.toString(), name)))
+                                       .execute(new JsonMappingAsyncHandler<SlotDescription>(SlotDescription.class))
+                                       .get();
+
+            System.out.println(mapper.writeValueAsString(slot));
         }
         finally {
             http.close();

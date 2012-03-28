@@ -5,9 +5,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 import com.google.common.io.Files;
-import com.ning.http.client.AsyncCompletionHandler;
 import com.ning.http.client.AsyncHttpClient;
-import com.ning.http.client.AsyncHttpClientConfig;
 import com.ning.http.client.Response;
 import org.apache.commons.io.FileUtils;
 import org.codehaus.jackson.map.DeserializationConfig;
@@ -15,9 +13,7 @@ import org.codehaus.jackson.map.ObjectMapper;
 import org.eclipse.jetty.server.DispatcherType;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.servlet.ServletContextHandler;
-import org.junit.After;
 import org.junit.AfterClass;
-import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -35,13 +31,11 @@ import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.logging.Handler;
-import java.util.logging.LogManager;
 
 import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertThat;
 import static org.skife.galaxy.TestingHelpers.*;
+import static org.skife.galaxy.base.MorePredicates.beanPropertyEquals;
 
 public class TestApi
 {
@@ -84,7 +78,7 @@ public class TestApi
                                     .execute(new JsonMappingAsyncHandler<AgentDescription>(AgentDescription.class))
                                     .get();
 
-        Action deploy = Iterables.find(root.getActions(), fieldEquals("rel", "deploy"));
+        Action deploy = Iterables.find(root.getActions(), beanPropertyEquals("rel", "deploy"));
         assertThat(deploy.getMethod(), equalTo("POST"));
         assertThat(deploy.getParams().keySet(), equalTo((Set<String>) ImmutableSet.of("name", "url", "configuration")));
 
@@ -111,7 +105,7 @@ public class TestApi
                                     .execute(new JsonMappingAsyncHandler<AgentDescription>(AgentDescription.class))
                                     .get();
 
-        Action deploy = Iterables.find(root.getActions(), fieldEquals("rel", "deploy"));
+        Action deploy = Iterables.find(root.getActions(), beanPropertyEquals("rel", "deploy"));
         assertThat(deploy.getMethod(), equalTo("POST"));
         assertThat(deploy.getParams().keySet(), equalTo((Set<String>) ImmutableSet.of("name", "url", "configuration")));
 
@@ -124,7 +118,7 @@ public class TestApi
                                 .get();
 
         // start the deployed thing
-        Action start = Iterables.find(c.getActions(), fieldEquals("rel", "start"));
+        Action start = Iterables.find(c.getActions(), beanPropertyEquals("rel", "start"));
         assertThat(start.getMethod(), equalTo("POST"));
         assertThat(start.getParams(), equalTo(Collections.<String, String>emptyMap()));
 
@@ -147,7 +141,7 @@ public class TestApi
 
 
     @Test
-//    @Ignore
+    @Ignore
     public void testStartApache() throws Exception
     {
         // find the deployment url
@@ -156,7 +150,7 @@ public class TestApi
                                     .execute(new JsonMappingAsyncHandler<AgentDescription>(AgentDescription.class))
                                     .get();
 
-        Action deploy = Iterables.find(root.getActions(), fieldEquals("rel", "deploy"));
+        Action deploy = Iterables.find(root.getActions(), beanPropertyEquals("rel", "deploy"));
 
         // perform a deployment against it
         _Deployment d = new _Deployment();
@@ -168,7 +162,7 @@ public class TestApi
                                 .get();
 
         // start the deployed thing
-        Action start = Iterables.find(c.getActions(), fieldEquals("rel", "start"));
+        Action start = Iterables.find(c.getActions(), beanPropertyEquals("rel", "start"));
 
         Response start_response = http.preparePost(start.getUri().toString())
                                       .execute()
@@ -191,7 +185,7 @@ public class TestApi
 
         assertThat(started.getState(), equalTo("running"));
 
-        Action stop = Iterables.find(c.getActions(), fieldEquals("rel", "stop"));
+        Action stop = Iterables.find(c.getActions(), beanPropertyEquals("rel", "stop"));
         http.preparePost(stop.getUri().toString())
             .execute()
             .get();
@@ -206,7 +200,7 @@ public class TestApi
                                     .execute(new JsonMappingAsyncHandler<AgentDescription>(AgentDescription.class))
                                     .get();
 
-        Action deploy = Iterables.find(root.getActions(), fieldEquals("rel", "deploy"));
+        Action deploy = Iterables.find(root.getActions(), beanPropertyEquals("rel", "deploy"));
 
         assertThat(deploy.getMethod(), equalTo("POST"));
         assertThat(deploy.getParams().keySet(), equalTo((Set<String>) ImmutableSet.of("name", "url", "configuration")));
@@ -233,7 +227,7 @@ public class TestApi
                                     .execute(new JsonMappingAsyncHandler<AgentDescription>(AgentDescription.class))
                                     .get();
 
-        Action deploy = Iterables.find(root.getActions(), fieldEquals("rel", "deploy"));
+        Action deploy = Iterables.find(root.getActions(), beanPropertyEquals("rel", "deploy"));
 
         _Deployment d = new _Deployment();
         d.url = URI.create("http://localhost:25365/kjhasdjkhasdjkhasdhasdjkh");
@@ -255,7 +249,7 @@ public class TestApi
                                     .execute(new JsonMappingAsyncHandler<AgentDescription>(AgentDescription.class))
                                     .get();
 
-        Action deploy = Iterables.find(root.getActions(), fieldEquals("rel", "deploy"));
+        Action deploy = Iterables.find(root.getActions(), beanPropertyEquals("rel", "deploy"));
 
         SlotDescription from_deploy = http.preparePost(deploy.getUri().toString())
                                           .setHeader("content-type", MediaType.APPLICATION_JSON)
@@ -263,7 +257,7 @@ public class TestApi
                                           .execute(new JsonMappingAsyncHandler<SlotDescription>(SlotDescription.class))
                                           .get();
 
-        URI self_url = Iterables.find(from_deploy.getLinks(), fieldEquals("rel", "self")).getUri();
+        URI self_url = Iterables.find(from_deploy.getLinks(), beanPropertyEquals("rel", "self")).getUri();
 
         AgentDescription root2 = http.prepareGet("http://localhost:25365/")
                                      .setHeader("accept", MediaType.APPLICATION_JSON)
@@ -287,7 +281,7 @@ public class TestApi
         _Action deploy = Iterables.find(http.prepareGet("http://localhost:25365/")
                                             .setHeader("accept", MediaType.APPLICATION_JSON)
                                             .execute(new JsonMappingAsyncHandler<_Root>(_Root.class)).get()._actions,
-                                        fieldEquals("rel", "deploy"));
+                                        beanPropertyEquals("rel", "deploy"));
         http.preparePost(deploy.uri)
             .setHeader("content-type", MediaType.APPLICATION_JSON)
             .setBody(mapper.writeValueAsString(new _Deployment()))
@@ -356,27 +350,4 @@ public class TestApi
         }
     }
 
-    public static class JsonMappingAsyncHandler<T> extends AsyncCompletionHandler<T>
-    {
-
-        private final Class<T> type;
-
-        public JsonMappingAsyncHandler(Class<T> type)
-        {
-            this.type = type;
-        }
-
-        @Override
-        public T onCompleted(Response response) throws Exception
-        {
-            try {
-                return mapper.readValue(response.getResponseBody(), type);
-            }
-            catch (Exception e) {
-                System.err.println(response.getResponseBody());
-                fail(e.getMessage());
-                throw e;
-            }
-        }
-    }
 }

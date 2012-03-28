@@ -87,33 +87,6 @@ public class TestingHelpers
         };
     }
 
-
-    public static <T> Predicate<T> fieldEquals(final String name, final Object value)
-    {
-        return new Predicate<T>()
-        {
-            @Override
-            public boolean apply(@Nullable T input)
-            {
-                if (input == null) return false;
-                try {
-                    for (PropertyDescriptor pd : Introspector.getBeanInfo(input.getClass())
-                                                             .getPropertyDescriptors())
-                    {
-                        if (pd.getName().equals(name)) {
-                            return value.equals(pd.getReadMethod().invoke(input));
-                        }
-                    }
-                }
-                catch (Exception e) {
-                    e.printStackTrace();
-                    return false;
-                }
-                return false;
-            }
-        };
-    }
-
     public static File file(File root, String... children)
     {
         File rs = root;
