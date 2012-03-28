@@ -1,5 +1,6 @@
 package org.skife.galaxy.agent;
 
+import com.google.common.base.Charsets;
 import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
@@ -45,6 +46,7 @@ public class Agent
     private final Map<UUID, Slot> slots = Maps.newConcurrentMap();
     private final File root;
     private final Dao dao;
+    private final UUID id;
 
     @Inject
     public Agent(@AgentRoot File root) throws IOException
@@ -56,6 +58,14 @@ public class Agent
         dao = new DBI("jdbc:sqlite:" + dbFile.getAbsolutePath()).onDemand(Dao.class);
         dao.createEnv();
 
+        File uuid_file = new File(root, "agent-id");
+        if (uuid_file.exists()) {
+            this.id = UUID.fromString(Files.readFirstLine(uuid_file, Charsets.UTF_8));
+        }
+        else {
+            this.id = UUID.randomUUID();
+            Files.write(this.id.toString(), uuid_file, Charsets.UTF_8);
+        }
         for (File path : root.listFiles()  ) {
             if (path.isDirectory()) {
                 Slot slot = Slot.from(path);
@@ -71,6 +81,11 @@ public class Agent
         Slot s = Slot.deploy(this.root, d, config);
         this.slots.put(s.getId(), s);
         return s;
+    }
+
+    public UUID getId()
+    {
+        return id;
     }
 
     public File getRoot()

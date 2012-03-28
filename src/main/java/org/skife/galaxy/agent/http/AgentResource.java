@@ -70,6 +70,7 @@ public class AgentResource
                        .header("Link", json_link.toString())
                        .entity(new Object()
                        {
+                           public final UUID id = agent.getId();
                            public final File root = agent.getRoot();
                            public final List<SlotDescription> slots = describe(agent.getSlots());
                            public final Map<String, URI> environment = agent.getEnvironmentConfig();
