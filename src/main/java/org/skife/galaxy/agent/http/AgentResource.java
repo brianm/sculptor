@@ -8,6 +8,10 @@ import org.skife.galaxy.agent.Agent;
 import org.skife.galaxy.agent.Deployment;
 import org.skife.galaxy.agent.Slot;
 import org.skife.galaxy.http.ErrorReport;
+import org.skife.galaxy.rep.Action;
+import org.skife.galaxy.rep.AgentDescription;
+import org.skife.galaxy.rep.Link;
+import org.skife.galaxy.rep.SlotDescription;
 
 import javax.inject.Inject;
 import javax.ws.rs.Consumes;
@@ -66,17 +70,15 @@ public class AgentResource
                                                                     "url", "Deployment bundle URL",
                                                                     "configuration", "Object where keys are paths inside deployment, and values are URLs to resources")));
         final Link json_link = new Link("alternate", authoritative, "JSON URL");
+
         return Response.ok()
                        .header("Link", json_link.toString())
-                       .entity(new Object()
-                       {
-                           public final UUID id = agent.getId();
-                           public final File root = agent.getRoot();
-                           public final List<SlotDescription> slots = describe(agent.getSlots());
-                           public final Map<String, URI> environment = agent.getEnvironmentConfig();
-                           public final List<Action> _actions = acts;
-                           public final List<Link> _links = asList(json_link);
-                       })
+                       .entity(new AgentDescription(asList(json_link),
+                                                    acts,
+                                                    agent.getEnvironmentConfig(),
+                                                    describe(agent.getSlots()),
+                                                    agent.getRoot(),
+                                                    agent.getId()))
                        .build();
     }
 
@@ -142,14 +144,14 @@ public class AgentResource
 
         return Response.created(slot_uri)
                        .location(slot_uri)
-                       .entity(new SlotDescription(s, ui)).build();
+                       .entity(SlotDescription.from(s, ui)).build();
     }
 
     private List<SlotDescription> describe(Map<UUID, Slot> raw_slots)
     {
         List<SlotDescription> rs = Lists.newArrayList();
         for (Map.Entry<UUID, Slot> entry : raw_slots.entrySet()) {
-            rs.add(new SlotDescription(entry.getValue(), ui));
+            rs.add(SlotDescription.from(entry.getValue(), ui));
         }
         return rs;
     }

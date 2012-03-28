@@ -22,6 +22,10 @@ import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.skife.galaxy.agent.http.GuiceAgentServletModule;
+import org.skife.galaxy.rep.Action;
+import org.skife.galaxy.rep.AgentDescription;
+import org.skife.galaxy.rep.Link;
+import org.skife.galaxy.rep.SlotDescription;
 
 import javax.ws.rs.core.MediaType;
 import java.io.File;
@@ -75,50 +79,56 @@ public class TestApi
     public void testDeploy() throws Exception
     {
         // Find deployment url/action
-        _Root root = http.prepareGet("http://localhost:25365/")
-                         .setHeader("accept", MediaType.APPLICATION_JSON)
-                         .execute(new JsonMappingAsyncHandler<_Root>(_Root.class)).get();
+        AgentDescription root = http.prepareGet("http://localhost:25365/")
+                                    .setHeader("accept", MediaType.APPLICATION_JSON)
+                                    .execute(new JsonMappingAsyncHandler<AgentDescription>(AgentDescription.class))
+                                    .get();
 
-        _Action deploy = Iterables.find(root._actions, fieldEquals("rel", "deploy"));
-        assertThat(deploy.method, equalTo("POST"));
-        assertThat(deploy.params.keySet(), equalTo((Set<String>) ImmutableSet.of("name", "url", "configuration")));
+        Action deploy = Iterables.find(root.getActions(), fieldEquals("rel", "deploy"));
+        assertThat(deploy.getMethod(), equalTo("POST"));
+        assertThat(deploy.getParams().keySet(), equalTo((Set<String>) ImmutableSet.of("name", "url", "configuration")));
 
         // perform a deployment against it
-        Response r = http.preparePost(deploy.uri)
+        Response r = http.preparePost(deploy.getUri().toString())
                          .setHeader("content-type", MediaType.APPLICATION_JSON)
                          .setBody(mapper.writeValueAsString(new _Deployment()))
                          .execute()
                          .get();
 
         assertThat(r.getStatusCode(), isHttpSuccess());
-        _DeployedSlot c = mapper.readValue(r.getResponseBody(), _DeployedSlot.class);
-        assertThat(c.slot.deployDir, isExistingFile());
-        assertThat(file(c.slot.deployDir, "env", "config.properties"), isExistingFile());
-        assertThat(c.slot.stopped, equalTo(true));
+        SlotDescription c = mapper.readValue(r.getResponseBody(), SlotDescription.class);
+        assertThat(c.getDeployDir(), isExistingFile());
+        assertThat(file(c.getDeployDir(), "env", "config.properties"), isExistingFile());
+        assertThat(c.getState(), equalTo("stopped"));
     }
 
     @Test
     public void testStartDeployedThing() throws Exception
     {
-        // find the deployment url
-        _Root root = http.prepareGet("http://localhost:25365/")
-                         .setHeader("accept", MediaType.APPLICATION_JSON)
-                         .execute(new JsonMappingAsyncHandler<_Root>(_Root.class)).get();
-        _Action deploy = Iterables.find(root._actions, fieldEquals("rel", "deploy"));
+        // Find deployment url/action
+        AgentDescription root = http.prepareGet("http://localhost:25365/")
+                                    .setHeader("accept", MediaType.APPLICATION_JSON)
+                                    .execute(new JsonMappingAsyncHandler<AgentDescription>(AgentDescription.class))
+                                    .get();
+
+        Action deploy = Iterables.find(root.getActions(), fieldEquals("rel", "deploy"));
+        assertThat(deploy.getMethod(), equalTo("POST"));
+        assertThat(deploy.getParams().keySet(), equalTo((Set<String>) ImmutableSet.of("name", "url", "configuration")));
 
         // perform a deployment against it
-        _DeployedSlot c = http.preparePost(deploy.uri)
-                              .setHeader("content-type", MediaType.APPLICATION_JSON)
-                              .setBody(mapper.writeValueAsString(new _Deployment()))
-                              .execute(new JsonMappingAsyncHandler<_DeployedSlot>(_DeployedSlot.class))
-                              .get();
+        // perform a deployment against it
+        SlotDescription c = http.preparePost(deploy.getUri().toString())
+                                .setHeader("content-type", MediaType.APPLICATION_JSON)
+                                .setBody(mapper.writeValueAsString(new _Deployment()))
+                                .execute(new JsonMappingAsyncHandler<SlotDescription>(SlotDescription.class))
+                                .get();
 
         // start the deployed thing
-        _Action start = Iterables.find(c._actions, fieldEquals("rel", "start"));
-        assertThat(start.method, equalTo("POST"));
-        assertThat(start.params, equalTo(Collections.<String, String>emptyMap()));
+        Action start = Iterables.find(c.getActions(), fieldEquals("rel", "start"));
+        assertThat(start.getMethod(), equalTo("POST"));
+        assertThat(start.getParams(), equalTo(Collections.<String, String>emptyMap()));
 
-        Response start_response = http.preparePost(start.uri)
+        Response start_response = http.preparePost(start.getUri().toString())
                                       .execute()
                                       .get();
 
@@ -128,39 +138,39 @@ public class TestApi
         String slot_uri = start_response.getHeader("location");
 
         // check to make sure the deployed thing is now running
-        _DeployedSlot started = http.prepareGet(slot_uri)
-                                    .setHeader("accept", MediaType.APPLICATION_JSON)
-                                    .execute(new JsonMappingAsyncHandler<_DeployedSlot>(_DeployedSlot.class))
-                                    .get();
-        assertThat(started.slot.running, equalTo(true));
+        SlotDescription started = http.prepareGet(slot_uri)
+                                      .setHeader("accept", MediaType.APPLICATION_JSON)
+                                      .execute(new JsonMappingAsyncHandler<SlotDescription>(SlotDescription.class))
+                                      .get();
+        assertThat(started.getState(), equalTo("running"));
     }
 
-    //
+
     @Test
-    @Ignore
+//    @Ignore
     public void testStartApache() throws Exception
     {
         // find the deployment url
-        _Root root = http.prepareGet("http://localhost:25365/")
-                         .setHeader("accept", MediaType.APPLICATION_JSON)
-                         .execute(new JsonMappingAsyncHandler<_Root>(_Root.class)).get();
-        _Action deploy = Iterables.find(root._actions, fieldEquals("rel", "deploy"));
+        AgentDescription root = http.prepareGet("http://localhost:25365/")
+                                    .setHeader("accept", MediaType.APPLICATION_JSON)
+                                    .execute(new JsonMappingAsyncHandler<AgentDescription>(AgentDescription.class))
+                                    .get();
+
+        Action deploy = Iterables.find(root.getActions(), fieldEquals("rel", "deploy"));
 
         // perform a deployment against it
         _Deployment d = new _Deployment();
         d.url = URI.create("file:///Users/brianm/src/galaxified-apache/target/galaxified-apache-0.0.1-SNAPSHOT-x86_64-darwin11.2.0.tar.gz");
-        _DeployedSlot c = http.preparePost(deploy.uri)
-                              .setHeader("content-type", MediaType.APPLICATION_JSON)
-                              .setBody(mapper.writeValueAsString(d))
-                              .execute(new JsonMappingAsyncHandler<_DeployedSlot>(_DeployedSlot.class))
-                              .get();
+        SlotDescription c = http.preparePost(deploy.getUri().toString())
+                                .setHeader("content-type", MediaType.APPLICATION_JSON)
+                                .setBody(mapper.writeValueAsString(d))
+                                .execute(new JsonMappingAsyncHandler<SlotDescription>(SlotDescription.class))
+                                .get();
 
         // start the deployed thing
-        _Action start = Iterables.find(c._actions, fieldEquals("rel", "start"));
-        assertThat(start.method, equalTo("POST"));
-        assertThat(start.params, equalTo(Collections.<String, String>emptyMap()));
+        Action start = Iterables.find(c.getActions(), fieldEquals("rel", "start"));
 
-        Response start_response = http.preparePost(start.uri)
+        Response start_response = http.preparePost(start.getUri().toString())
                                       .execute()
                                       .get();
 
@@ -170,19 +180,19 @@ public class TestApi
         String slot_uri = start_response.getHeader("location");
 
         // check to make sure the deployed thing is now running
-        _DeployedSlot started = http.prepareGet(slot_uri)
-                                    .setHeader("accept", MediaType.APPLICATION_JSON)
-                                    .execute(new JsonMappingAsyncHandler<_DeployedSlot>(_DeployedSlot.class))
-                                    .get();
+        SlotDescription started = http.prepareGet(slot_uri)
+                                      .setHeader("accept", MediaType.APPLICATION_JSON)
+                                      .execute(new JsonMappingAsyncHandler<SlotDescription>(SlotDescription.class))
+                                      .get();
 
-        System.out.println(started.slot.deployDir.getAbsolutePath());
+        System.out.println(started.getDeployDir().getAbsolutePath());
 
 //        Thread.currentThread().join();
 
-        assertThat(started.slot.running, equalTo(true));
+        assertThat(started.getState(), equalTo("running"));
 
-        _Action stop = Iterables.find(c._actions, fieldEquals("rel", "stop"));
-        http.preparePost(stop.uri)
+        Action stop = Iterables.find(c.getActions(), fieldEquals("rel", "stop"));
+        http.preparePost(stop.getUri().toString())
             .execute()
             .get();
     }
@@ -191,19 +201,21 @@ public class TestApi
     public void testDeployBundleThatDoesNotExist() throws Exception
     {
         // Find deployment url/action
-        _Root root = http.prepareGet("http://localhost:25365/")
-                         .setHeader("accept", MediaType.APPLICATION_JSON)
-                         .execute(new JsonMappingAsyncHandler<_Root>(_Root.class)).get();
+        AgentDescription root = http.prepareGet("http://localhost:25365/")
+                                    .setHeader("accept", MediaType.APPLICATION_JSON)
+                                    .execute(new JsonMappingAsyncHandler<AgentDescription>(AgentDescription.class))
+                                    .get();
 
-        _Action deploy = Iterables.find(root._actions, fieldEquals("rel", "deploy"));
-        assertThat(deploy.method, equalTo("POST"));
-        assertThat(deploy.params.keySet(), equalTo((Set<String>) ImmutableSet.of("name", "url", "configuration")));
+        Action deploy = Iterables.find(root.getActions(), fieldEquals("rel", "deploy"));
+
+        assertThat(deploy.getMethod(), equalTo("POST"));
+        assertThat(deploy.getParams().keySet(), equalTo((Set<String>) ImmutableSet.of("name", "url", "configuration")));
 
 
         _Deployment d = new _Deployment();
         d.url = URI.create("file:///tmp/does_not_exist.tar.gz");
         // perform a deployment against it
-        Response r = http.preparePost(deploy.uri)
+        Response r = http.preparePost(deploy.getUri().toString())
                          .setHeader("content-type", MediaType.APPLICATION_JSON)
                          .setBody(mapper.writeValueAsString(d))
                          .execute()
@@ -216,18 +228,17 @@ public class TestApi
     public void testDeployBundleThatDoesNotExistOverHttp() throws Exception
     {
         // Find deployment url/action
-        _Root root = http.prepareGet("http://localhost:25365/")
-                         .setHeader("accept", MediaType.APPLICATION_JSON)
-                         .execute(new JsonMappingAsyncHandler<_Root>(_Root.class)).get();
+        AgentDescription root = http.prepareGet("http://localhost:25365/")
+                                    .setHeader("accept", MediaType.APPLICATION_JSON)
+                                    .execute(new JsonMappingAsyncHandler<AgentDescription>(AgentDescription.class))
+                                    .get();
 
-        _Action deploy = Iterables.find(root._actions, fieldEquals("rel", "deploy"));
-        assertThat(deploy.method, equalTo("POST"));
-        assertThat(deploy.params.keySet(), equalTo((Set<String>) ImmutableSet.of("name", "url", "configuration")));
+        Action deploy = Iterables.find(root.getActions(), fieldEquals("rel", "deploy"));
 
         _Deployment d = new _Deployment();
         d.url = URI.create("http://localhost:25365/kjhasdjkhasdjkhasdhasdjkh");
         // perform a deployment against it
-        Response r = http.preparePost(deploy.uri)
+        Response r = http.preparePost(deploy.getUri().toString())
                          .setHeader("content-type", MediaType.APPLICATION_JSON)
                          .setBody(mapper.writeValueAsString(d))
                          .execute()
@@ -239,27 +250,30 @@ public class TestApi
     @Test
     public void testDeployedThingListedAtRoot() throws Exception
     {
-        _Action deploy = Iterables.find(http.prepareGet("http://localhost:25365/")
-                                            .setHeader("accept", MediaType.APPLICATION_JSON)
-                                            .execute(new JsonMappingAsyncHandler<_Root>(_Root.class)).get()._actions,
-                                        fieldEquals("rel", "deploy"));
+        AgentDescription root = http.prepareGet("http://localhost:25365/")
+                                    .setHeader("accept", MediaType.APPLICATION_JSON)
+                                    .execute(new JsonMappingAsyncHandler<AgentDescription>(AgentDescription.class))
+                                    .get();
 
-        _DeployedSlot from_deploy = http.preparePost(deploy.uri)
-                                        .setHeader("content-type", MediaType.APPLICATION_JSON)
-                                        .setBody(mapper.writeValueAsString(new _Deployment()))
-                                        .execute(new JsonMappingAsyncHandler<_DeployedSlot>(_DeployedSlot.class))
-                                        .get();
+        Action deploy = Iterables.find(root.getActions(), fieldEquals("rel", "deploy"));
 
-        URI self_url = Iterables.find(from_deploy._links, fieldEquals("rel", "self")).uri;
+        SlotDescription from_deploy = http.preparePost(deploy.getUri().toString())
+                                          .setHeader("content-type", MediaType.APPLICATION_JSON)
+                                          .setBody(mapper.writeValueAsString(new _Deployment()))
+                                          .execute(new JsonMappingAsyncHandler<SlotDescription>(SlotDescription.class))
+                                          .get();
 
-        _Root root = http.prepareGet("http://localhost:25365/")
-                         .setHeader("accept", MediaType.APPLICATION_JSON)
-                         .execute(new JsonMappingAsyncHandler<_Root>(_Root.class)).get();
+        URI self_url = Iterables.find(from_deploy.getLinks(), fieldEquals("rel", "self")).getUri();
+
+        AgentDescription root2 = http.prepareGet("http://localhost:25365/")
+                                     .setHeader("accept", MediaType.APPLICATION_JSON)
+                                     .execute(new JsonMappingAsyncHandler<AgentDescription>(AgentDescription.class))
+                                     .get();
 
         boolean found_self = false;
-        for (_DeployedSlot slot : root.slots) {
-            for (_Link link : slot._links) {
-                found_self = found_self || link.uri.equals(self_url);
+        for (SlotDescription slot : root2.getSlots()) {
+            for (Link link : slot.getLinks()) {
+                found_self = found_self || link.getUri().equals(self_url);
             }
         }
 

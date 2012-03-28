@@ -8,6 +8,8 @@ import org.hamcrest.StringDescription;
 
 import javax.annotation.Nullable;
 import javax.ws.rs.core.Response;
+import java.beans.Introspector;
+import java.beans.PropertyDescriptor;
 import java.io.File;
 import java.util.regex.Pattern;
 
@@ -45,14 +47,15 @@ public class TestingHelpers
         };
     }
 
-    public static Matcher<Integer> isHttpBadRequest() {
+    public static Matcher<Integer> isHttpBadRequest()
+    {
         return new BaseMatcher<Integer>()
         {
             @Override
             public boolean matches(Object item)
             {
 
-                return ((Integer)item) == 400;
+                return ((Integer) item) == 400;
             }
 
             @Override
@@ -72,8 +75,8 @@ public class TestingHelpers
             {
                 Integer val = (Integer) item;
                 return val == Response.Status.SEE_OTHER.getStatusCode()
-                    || val == Response.Status.MOVED_PERMANENTLY.getStatusCode()
-                    || val ==  302; // Response.Status.FOUND.getStatusCode();
+                       || val == Response.Status.MOVED_PERMANENTLY.getStatusCode()
+                       || val == 302; // Response.Status.FOUND.getStatusCode();
             }
 
             @Override
@@ -93,16 +96,20 @@ public class TestingHelpers
             public boolean apply(@Nullable T input)
             {
                 if (input == null) return false;
-
-                Object cand;
                 try {
-                    cand = input.getClass().getField(name).get(input);
+                    for (PropertyDescriptor pd : Introspector.getBeanInfo(input.getClass())
+                                                             .getPropertyDescriptors())
+                    {
+                        if (pd.getName().equals(name)) {
+                            return value.equals(pd.getReadMethod().invoke(input));
+                        }
+                    }
                 }
                 catch (Exception e) {
                     e.printStackTrace();
                     return false;
                 }
-                return value.equals(cand);
+                return false;
             }
         };
     }
@@ -116,7 +123,8 @@ public class TestingHelpers
         return rs;
     }
 
-    public static Matcher<String> matches(final String pattern) {
+    public static Matcher<String> matches(final String pattern)
+    {
         return new BaseMatcher<String>()
         {
             @Override
@@ -140,7 +148,7 @@ public class TestingHelpers
             @Override
             public boolean matches(Object item)
             {
-                if (! (item instanceof File)) { return false; }
+                if (!(item instanceof File)) { return false; }
                 File f = (File) item;
                 return f.exists();
             }

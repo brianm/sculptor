@@ -4,6 +4,7 @@ import com.sun.jersey.api.view.Viewable;
 import org.skife.galaxy.agent.Agent;
 import org.skife.galaxy.agent.Slot;
 import org.skife.galaxy.agent.Status;
+import org.skife.galaxy.rep.SlotDescription;
 
 import javax.inject.Inject;
 import javax.ws.rs.GET;
@@ -37,7 +38,7 @@ public class SlotResource
     public SlotDescription viewJson(final @PathParam("uuid") UUID uuid)
     {
         Slot slot = agent.getSlot(uuid);
-        return new SlotDescription(slot, ui);
+        return SlotDescription.from(slot, ui);
     }
 
     @GET

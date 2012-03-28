@@ -1,5 +1,8 @@
-package org.skife.galaxy.agent.http;
+package org.skife.galaxy.rep;
 
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
+import org.codehaus.jackson.annotate.JsonCreator;
 import org.codehaus.jackson.annotate.JsonProperty;
 
 import java.net.URI;
@@ -13,6 +16,7 @@ public class Action
     private final URI                 uri;
     private final Map<String, String> params;
 
+    @JsonCreator
     public Action(@JsonProperty("rel") String rel,
                   @JsonProperty("method") String method,
                   @JsonProperty("uri") URI uri,
@@ -47,5 +51,17 @@ public class Action
     public URI getUri()
     {
         return uri;
+    }
+
+    @Override
+    public boolean equals(Object o)
+    {
+        return EqualsBuilder.reflectionEquals(this, o);
+    }
+
+    @Override
+    public int hashCode()
+    {
+        return HashCodeBuilder.reflectionHashCode(this);
     }
 }

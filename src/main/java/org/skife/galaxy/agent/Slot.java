@@ -321,12 +321,12 @@ public class Slot
 
     public boolean isRunning()
     {
-        return "running".equals(state.getUnchecked(KEY));
+        return "running".equals(getState());
     }
 
     public boolean isStopped()
     {
-        return "stopped".equals(state.getUnchecked(KEY));
+        return "stopped".equals(getState());
     }
 
     public boolean isConfused()
@@ -337,5 +337,10 @@ public class Slot
     public UUID getId()
     {
         return id;
+    }
+
+    public String getState()
+    {
+        return state.getUnchecked(KEY);
     }
 }

@@ -5,7 +5,7 @@ import org.junit.Test;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
-public class TestDateFormatting
+public class DateFormattingTest
 {
     @Test
     public void testFoo() throws Exception

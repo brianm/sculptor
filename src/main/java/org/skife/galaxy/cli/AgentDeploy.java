@@ -9,7 +9,7 @@ import org.codehaus.jackson.map.ObjectMapper;
 import org.iq80.cli.Arguments;
 import org.iq80.cli.Command;
 import org.iq80.cli.Option;
-import org.skife.galaxy.agent.http.Action;
+import org.skife.galaxy.rep.Action;
 
 import javax.ws.rs.core.MediaType;
 import java.io.File;
