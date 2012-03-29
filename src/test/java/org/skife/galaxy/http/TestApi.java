@@ -35,7 +35,7 @@ import java.util.Set;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertThat;
 import static org.skife.galaxy.TestingHelpers.*;
-import static org.skife.galaxy.base.MorePredicates.beanPropertyEquals;
+import static org.skife.galaxy.guava.MorePredicates.beanPropertyEquals;
 
 public class TestApi
 {

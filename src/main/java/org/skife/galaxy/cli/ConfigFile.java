@@ -1,7 +1,5 @@
 package org.skife.galaxy.cli;
 
-import com.google.common.io.Files;
-
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;

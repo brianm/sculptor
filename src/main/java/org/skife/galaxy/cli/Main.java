@@ -1,7 +1,7 @@
 package org.skife.galaxy.cli;
 
-import org.iq80.cli.Cli;
-import org.iq80.cli.Help;
+import org.skife.cli.Cli;
+import org.skife.cli.Help;
 import org.slf4j.bridge.SLF4JBridgeHandler;
 
 import java.util.concurrent.Callable;
@@ -23,9 +23,8 @@ public class Main
 
         Cli.CliBuilder<Callable> builder = Cli.buildCli("sculptor", Callable.class)
                                               .withDescription("A Galaxy implementation")
-                                              .withDefaultCommand(Help.class)
-                                              .withCommand(Help.class);
-
+                                              .withCommand(Help.class)
+                                              .withDefaultCommand(Help.class);
 
         builder.withGroup("agent")
                .withDescription("Manage a local agent")

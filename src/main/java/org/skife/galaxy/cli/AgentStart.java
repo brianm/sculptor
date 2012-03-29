@@ -7,9 +7,8 @@ import jnr.ffi.Library;
 import org.eclipse.jetty.server.DispatcherType;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.servlet.ServletContextHandler;
-import org.iq80.cli.Command;
-import org.iq80.cli.Option;
-import org.iq80.cli.OptionType;
+import org.skife.cli.Command;
+import org.skife.cli.Option;
 import org.skife.galaxy.agent.http.GuiceAgentServletModule;
 import org.skife.galaxy.http.NotFoundServlet;
 import org.skife.gressil.Daemon;
@@ -21,33 +20,34 @@ import java.util.concurrent.Callable;
 @Command(name = "start", description = "Start and daemonize an agent")
 public class AgentStart implements Callable<Void>
 {
-    @Option(name = {"-r", "--root"}, required = true, description = "Root directory for deployment slots")
+    @Option(name = {"-r", "--root"},
+            title = "root",
+            required = true,
+            description = "Root directory for deployment slots",
+            configuration = "agent.root")
     public File root;
 
-    @Option(name = {"-P", "--port"}, description = "Port for HTTP server, default is 25365")
+    @Option(name = {"-P", "--port"},
+            title = "port",
+            description = "Port for HTTP server, default is 25365",
+            configuration = "agent.port")
     public int port = 25365;
 
-    @Option(name = "--debug", type = OptionType.GLOBAL)
-    public boolean debug = false;
+    @Option(name = {"-p", "--pidfile"},
+            title = "pidfile",
+            description = "path to pidfile", configuration = "agent.pidfile")
+    public File pidfile = new File("sculptor-agent.pid");
 
-    @Option(name = {"-p", "--pidfile"}, description = "Pidfile")
-    public File pidfile;
-
-    @Option(name = {"-l", "--log"}, description = "Log file")
-    public File logfile;
-
-    @Option(name={"-c", "--config"}, description = "Configuration file", type = OptionType.GLOBAL)
-    public File config = new File("/etc/sculptor/agent.conf");
+    @Option(name = {"-l", "--log"},
+            title = "log-file",
+            description = "Log file",
+            configuration = "agent.log")
+    public File logfile = new File("/dev/null");
 
     public Void call() throws Exception
     {
-        ConfigFile cf = new ConfigFile(config);
-        root = cf.fallbackFrom(root, "root");
-        logfile = cf.fallbackFrom(logfile, "log");
-        pidfile = cf.fallbackFrom(pidfile, "pidfile");
-
         if (pidfile.exists()) {
-            // pidfile exists, check to see if an agent is alreay running
+            // pidfile exists, check to see if an agent is already running
             int pid = Integer.parseInt(Files.readFirstLine(pidfile, Charsets.US_ASCII));
             int rs = Library.loadLibrary("c", LibC.class).kill(pid, 0);
             if (rs == 0) {
@@ -67,7 +67,7 @@ public class AgentStart implements Callable<Void>
 
         Server server = new Server(port);
         ServletContextHandler handler = new ServletContextHandler(ServletContextHandler.NO_SESSIONS);
-        handler.addEventListener(new GuiceAgentServletModule(root, debug));
+        handler.addEventListener(new GuiceAgentServletModule(root));
         handler.addFilter(com.google.inject.servlet.GuiceFilter.class, "/*", EnumSet.allOf(DispatcherType.class));
         handler.addServlet(NotFoundServlet.class, "/*");
         server.setHandler(handler);

@@ -3,9 +3,9 @@ package org.skife.galaxy.cli;
 import com.google.common.base.Charsets;
 import com.google.common.io.Files;
 import jnr.ffi.Library;
-import org.iq80.cli.Command;
-import org.iq80.cli.Option;
-import org.iq80.cli.OptionType;
+import org.skife.cli.Command;
+import org.skife.cli.Option;
+import org.skife.cli.OptionType;
 
 import java.io.File;
 import java.util.concurrent.Callable;

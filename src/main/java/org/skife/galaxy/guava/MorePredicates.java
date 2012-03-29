@@ -1,4 +1,4 @@
-package org.skife.galaxy.base;
+package org.skife.galaxy.guava;
 
 import com.google.common.base.Objects;
 import com.google.common.base.Predicate;
@@ -10,6 +10,7 @@ import java.beans.PropertyDescriptor;
 
 public class MorePredicates
 {
+
     public static <T> Predicate<T> beanPropertyEquals(final String propertyName, final Object value)
     {
         return new Predicate<T>()

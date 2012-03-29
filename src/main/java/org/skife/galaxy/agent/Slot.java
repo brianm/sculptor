@@ -2,7 +2,6 @@ package org.skife.galaxy.agent;
 
 import com.google.common.base.Charsets;
 import com.google.common.base.Preconditions;
-import com.google.common.base.Suppliers;
 import com.google.common.base.Throwables;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
@@ -16,7 +15,6 @@ import org.skife.galaxy.agent.command.Command;
 import org.skife.galaxy.agent.command.CommandFailedException;
 
 import java.io.BufferedReader;
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -24,14 +22,11 @@ import java.io.InputStream;
 import java.net.URI;
 import java.net.URL;
 import java.text.SimpleDateFormat;
-import java.util.Arrays;
-import java.util.Calendar;
 import java.util.Date;
 import java.util.Map;
 import java.util.Properties;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicReference;
 
 public class Slot
 {

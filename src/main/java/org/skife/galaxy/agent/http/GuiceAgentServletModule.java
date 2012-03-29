@@ -12,13 +12,18 @@ import java.io.File;
 
 public class GuiceAgentServletModule extends GuiceServletContextListener
 {
-    private final File agentRoot;
+    private final File    agentRoot;
     private final boolean debug;
+
+    public GuiceAgentServletModule(File agentRoot)
+    {
+        this(agentRoot, false);
+    }
 
     public GuiceAgentServletModule(File agentRoot, boolean debug)
     {
         this.agentRoot = agentRoot;
-        this.debug= debug;
+        this.debug = debug;
     }
 
     @Override
