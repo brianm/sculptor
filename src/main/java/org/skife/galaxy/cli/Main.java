@@ -42,6 +42,13 @@ public class Main
                .withCommand(AgentList.class)
                .withCommand(AgentRun.class);
 
+        builder.withGroup("slot")
+               .withDescription("Manage slots on an agent")
+               .withDefaultCommand(Help.class)
+               .withCommand(Help.class)
+               .withCommand(SlotStart.class)
+               .withCommand(SlotStop.class);
+
         builder.build().parse(args).call();
     }
 
