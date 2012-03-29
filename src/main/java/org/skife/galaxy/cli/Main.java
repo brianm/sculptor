@@ -2,7 +2,6 @@ package org.skife.galaxy.cli;
 
 import org.skife.cli.Cli;
 import org.skife.cli.Help;
-import org.skife.cli.config.PropertiesConfiguration;
 import org.slf4j.bridge.SLF4JBridgeHandler;
 
 import java.io.File;

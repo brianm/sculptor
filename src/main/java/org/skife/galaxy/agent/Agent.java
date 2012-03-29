@@ -3,9 +3,11 @@ package org.skife.galaxy.agent;
 import com.google.common.base.Charsets;
 import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
 import com.google.common.io.Files;
 import com.google.common.util.concurrent.MoreExecutors;
+import com.ning.http.client.AsyncHttpClient;
 import org.skife.galaxy.agent.command.CommandFailedException;
 import org.skife.galaxy.agent.http.ConfigurationItem;
 import org.skife.jdbi.v2.DBI;
@@ -22,13 +24,20 @@ import java.io.IOException;
 import java.net.URI;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.LinkedBlockingDeque;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+
+import static com.google.common.util.concurrent.MoreExecutors.getExitingScheduledExecutorService;
 
 public class Agent
 {
@@ -44,14 +53,22 @@ public class Agent
     public static final ExecutorService EXEC_POOL = MoreExecutors.getExitingExecutorService(new ThreadPoolExecutor(1, 100, 100, TimeUnit.MILLISECONDS, new LinkedBlockingDeque<Runnable>()));
 
     private final Map<UUID, Slot> slots = Maps.newConcurrentMap();
-    private final File root;
-    private final Dao dao;
-    private final UUID id;
+    private final File     root;
+    private final Dao      dao;
+    private final UUID     id;
+    private final Set<URI> consoleUrls;
 
     @Inject
     public Agent(@AgentRoot File root) throws IOException
     {
+        this(root, Collections.<URI>emptySet());
+    }
+
+
+    public Agent(@AgentRoot File root, Collection<URI> consoles) throws IOException
+    {
         this.root = root;
+        this.consoleUrls = ImmutableSet.copyOf(consoles);
 
         File dbFile = new File(root, "state.db");
         Files.createParentDirs(dbFile);
@@ -66,11 +83,19 @@ public class Agent
             this.id = UUID.randomUUID();
             Files.write(this.id.toString(), uuid_file, Charsets.UTF_8);
         }
-        for (File path : root.listFiles()  ) {
+        for (File path : root.listFiles()) {
             if (path.isDirectory()) {
                 Slot slot = Slot.from(path);
                 slots.put(slot.getId(), slot);
             }
+        }
+
+        // starting these threads is okay, we do not reference *this* at all
+        ScheduledExecutorService ex = getExitingScheduledExecutorService(
+            new ScheduledThreadPoolExecutor(consoles.size()),
+            1, TimeUnit.SECONDS);
+        for (URI console : consoles) {
+            ex.scheduleWithFixedDelay(new ConsoleReporter(console), 0, 1, TimeUnit.MINUTES);
         }
     }
 
@@ -81,6 +106,11 @@ public class Agent
         Slot s = Slot.deploy(this.root, d, config);
         this.slots.put(s.getId(), s);
         return s;
+    }
+
+    public Set<URI> getConsoleUrls()
+    {
+        return consoleUrls;
     }
 
     public UUID getId()
@@ -147,6 +177,29 @@ public class Agent
         public ConfigurationItem map(int i, ResultSet resultSet, StatementContext statementContext) throws SQLException
         {
             return new ConfigurationItem(resultSet.getString("path"), URI.create(resultSet.getString("url")));
+        }
+    }
+
+
+    private static class ConsoleReporter implements Runnable
+    {
+        private final URI uri;
+
+        private ConsoleReporter(URI uri)
+        {
+            this.uri = uri;
+        }
+
+        @Override
+        public void run()
+        {
+            AsyncHttpClient http = new AsyncHttpClient();
+            try {
+                System.out.printf("pretending to report to console at %s\n", uri);
+            }
+            finally {
+                http.close();
+            }
         }
     }
 }
