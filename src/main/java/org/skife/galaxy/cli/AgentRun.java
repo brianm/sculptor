@@ -18,7 +18,6 @@ public class AgentRun implements Callable<Void>
 {
     @Option(name = {"-r", "--root"},
             title = "root",
-            required = true,
             description = "Root directory for deployment slots",
             configuration = "agent.root")
     public File root;
@@ -28,11 +27,6 @@ public class AgentRun implements Callable<Void>
             description = "Port for HTTP server, default is 25365",
             configuration = "agent.port")
     public int port = 25365;
-
-    @Option(name = {"-p", "--pidfile"},
-            title = "pidfile",
-            description = "path to pidfile", configuration = "agent.pidfile")
-    public File pidfile = new File("sculptor-agent.pid");
 
     public Void call() throws Exception
     {

@@ -10,6 +10,7 @@ import org.skife.galaxy.agent.Slot;
 import org.skife.galaxy.http.ErrorReport;
 import org.skife.galaxy.rep.Action;
 import org.skife.galaxy.rep.AgentDescription;
+import org.skife.galaxy.rep.DeploymentDescription;
 import org.skife.galaxy.rep.Link;
 import org.skife.galaxy.rep.SlotDescription;
 
@@ -122,11 +123,11 @@ public class AgentResource
     @Path("deploy")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public Response deploy(DeployJson json)
+    public Response deploy(DeploymentDescription json)
     {
         final Slot s;
         try {
-            s = agent.deploy(new Deployment(json.name, json.url, json.configuration));
+            s = agent.deploy(new Deployment(json.getName(), json.getUrl(), json.getConfiguration()));
         }
         catch (FileNotFoundException e) {
             // url which didna exist
@@ -175,12 +176,5 @@ public class AgentResource
             this.url = url;
         }
 
-    }
-
-    public static class DeployJson
-    {
-        public URI              url;
-        public String           name;
-        public Map<String, URI> configuration;
     }
 }

@@ -22,7 +22,6 @@ public class AgentStart implements Callable<Void>
 {
     @Option(name = {"-r", "--root"},
             title = "root",
-            required = true,
             description = "Root directory for deployment slots",
             configuration = "agent.root")
     public File root;
