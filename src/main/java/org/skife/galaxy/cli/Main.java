@@ -25,13 +25,13 @@ public class Main
     {
 
         Cli.CliBuilder<Callable> builder = Cli.buildCli("sculptor", Callable.class)
-                                              .withConfiguration(fromProperties(new File("agent.conf")))
+                                              .withConfiguration(fromProperties(new File("sculptor.conf")))
                                               .withDescription("A Galaxy implementation")
                                               .withCommand(Help.class)
                                               .withDefaultCommand(Help.class);
 
         builder.withGroup("agent")
-               .withDescription("Manage a local agent")
+               .withDescription("Manage an agent")
                .withDefaultCommand(Help.class)
                .withCommand(Help.class)
                .withCommand(AgentDeploy.class)
@@ -47,6 +47,12 @@ public class Main
                .withCommand(Help.class)
                .withCommand(SlotStart.class)
                .withCommand(SlotStop.class);
+
+        builder.withGroup("console")
+            .withDescription("Manage a console")
+            .withDefaultCommand(Help.class)
+            .withCommand(Help.class)
+            .withCommand(ConsoleRun.class);
 
         builder.build().parse(args).call();
     }
