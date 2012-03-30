@@ -2,13 +2,11 @@ package org.skife.galaxy.cli;
 
 import com.google.common.collect.Iterables;
 import com.ning.http.client.AsyncHttpClient;
-import com.ning.http.client.Request;
 import com.ning.http.client.RequestBuilder;
 import com.ning.http.client.Response;
 import org.skife.cli.Arguments;
 import org.skife.cli.Command;
 import org.skife.cli.Option;
-import org.skife.galaxy.guava.MorePredicates;
 import org.skife.galaxy.http.JsonMappingAsyncHandler;
 import org.skife.galaxy.rep.Action;
 import org.skife.galaxy.rep.AgentDescription;
@@ -18,7 +16,7 @@ import javax.ws.rs.core.MediaType;
 import java.net.URI;
 import java.util.concurrent.Callable;
 
-import static org.skife.galaxy.guava.MorePredicates.beanPropertyEquals;
+import static org.skife.galaxy.base.MorePredicates.beanPropertyEquals;
 
 @Command(name = "start", description = "start service in the specified slot")
 public class SlotStart implements Callable<Void>

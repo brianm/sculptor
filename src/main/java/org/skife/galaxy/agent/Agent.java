@@ -8,6 +8,7 @@ import com.google.common.collect.Maps;
 import com.google.common.io.Files;
 import com.google.common.util.concurrent.MoreExecutors;
 import com.ning.http.client.AsyncHttpClient;
+import org.skife.galaxy.ServerRoot;
 import org.skife.galaxy.agent.command.CommandFailedException;
 import org.skife.galaxy.agent.http.ConfigurationItem;
 import org.skife.jdbi.v2.DBI;
@@ -59,13 +60,13 @@ public class Agent
     private final Set<URI> consoleUrls;
 
     @Inject
-    public Agent(@AgentRoot File root) throws IOException
+    public Agent(@ServerRoot File root) throws IOException
     {
         this(root, Collections.<URI>emptySet());
     }
 
 
-    public Agent(@AgentRoot File root, Collection<URI> consoles) throws IOException
+    public Agent(@ServerRoot File root, Collection<URI> consoles) throws IOException
     {
         this.root = root;
         this.consoleUrls = ImmutableSet.copyOf(consoles);

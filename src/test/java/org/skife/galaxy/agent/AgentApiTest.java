@@ -1,4 +1,4 @@
-package org.skife.galaxy.http;
+package org.skife.galaxy.agent;
 
 import com.google.common.base.Objects;
 import com.google.common.collect.ImmutableMap;
@@ -17,7 +17,9 @@ import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
-import org.skife.galaxy.agent.http.GuiceAgentServletModule;
+import org.skife.galaxy.agent.http.GuiceAgentListener;
+import org.skife.galaxy.http.JsonMappingAsyncHandler;
+import org.skife.galaxy.http.NotFoundServlet;
 import org.skife.galaxy.rep.Action;
 import org.skife.galaxy.rep.AgentDescription;
 import org.skife.galaxy.rep.Link;
@@ -35,9 +37,9 @@ import java.util.Set;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertThat;
 import static org.skife.galaxy.TestingHelpers.*;
-import static org.skife.galaxy.guava.MorePredicates.beanPropertyEquals;
+import static org.skife.galaxy.base.MorePredicates.beanPropertyEquals;
 
-public class TestApi
+public class AgentApiTest
 {
 //    static {
 //        java.util.logging.Logger javaRootLogger = LogManager.getLogManager().getLogger("");
@@ -54,7 +56,7 @@ public class TestApi
     public static void setUp() throws Exception
     {
         ServletContextHandler handler = new ServletContextHandler(ServletContextHandler.NO_SESSIONS);
-        handler.addEventListener(new GuiceAgentServletModule(tmp, true));
+        handler.addEventListener(new GuiceAgentListener(tmp, true));
         handler.addFilter(com.google.inject.servlet.GuiceFilter.class, "/*", EnumSet.allOf(DispatcherType.class));
         handler.addServlet(NotFoundServlet.class, "/*");
         server.setHandler(handler);

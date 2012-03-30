@@ -41,12 +41,6 @@ public class Link
     }
 
     @Override
-    public String toString()
-    {
-        return ToStringBuilder.reflectionToString(this);
-    }
-
-    @Override
     public boolean equals(Object o)
     {
      return EqualsBuilder.reflectionEquals(this, o);
@@ -56,5 +50,11 @@ public class Link
     public int hashCode()
     {
         return HashCodeBuilder.reflectionHashCode(this);
+    }
+
+    @Override
+    public String toString()
+    {
+        return ToStringBuilder.reflectionToString(this);
     }
 }

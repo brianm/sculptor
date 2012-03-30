@@ -16,7 +16,7 @@ import javax.ws.rs.core.MediaType;
 import java.net.URI;
 import java.util.concurrent.Callable;
 
-import static org.skife.galaxy.guava.MorePredicates.beanPropertyEquals;
+import static org.skife.galaxy.base.MorePredicates.beanPropertyEquals;
 
 @Command(name = "stop", description = "start service in the specified slot")
 public class SlotStop implements Callable<Void>

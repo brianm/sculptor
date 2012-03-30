@@ -9,7 +9,7 @@ import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.skife.cli.Command;
 import org.skife.cli.Option;
-import org.skife.galaxy.agent.http.GuiceAgentServletModule;
+import org.skife.galaxy.agent.http.GuiceAgentListener;
 import org.skife.galaxy.http.NotFoundServlet;
 import org.skife.gressil.Daemon;
 
@@ -66,7 +66,7 @@ public class AgentStart implements Callable<Void>
 
         Server server = new Server(port);
         ServletContextHandler handler = new ServletContextHandler(ServletContextHandler.NO_SESSIONS);
-        handler.addEventListener(new GuiceAgentServletModule(root));
+        handler.addEventListener(new GuiceAgentListener(root));
         handler.addFilter(com.google.inject.servlet.GuiceFilter.class, "/*", EnumSet.allOf(DispatcherType.class));
         handler.addServlet(NotFoundServlet.class, "/*");
         server.setHandler(handler);

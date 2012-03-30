@@ -1,4 +1,4 @@
-package org.skife.galaxy.agent;
+package org.skife.galaxy;
 
 import com.google.inject.BindingAnnotation;
 
@@ -10,6 +10,6 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.PARAMETER, ElementType.METHOD})
 @BindingAnnotation
-public @interface AgentRoot
+public @interface ServerRoot
 {
 }

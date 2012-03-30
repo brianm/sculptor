@@ -1,4 +1,4 @@
-package org.skife.galaxy.guava;
+package org.skife.galaxy.base;
 
 import com.google.common.base.Objects;
 import com.google.common.base.Predicate;

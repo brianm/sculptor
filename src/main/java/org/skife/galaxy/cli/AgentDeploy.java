@@ -4,7 +4,6 @@ import com.google.common.base.Preconditions;
 import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Iterables;
-import com.google.common.collect.Lists;
 import com.ning.http.client.AsyncHttpClient;
 import org.codehaus.jackson.map.DeserializationConfig;
 import org.codehaus.jackson.map.ObjectMapper;
@@ -28,7 +27,7 @@ import java.util.Map;
 import java.util.concurrent.Callable;
 
 import static com.google.common.base.Preconditions.checkState;
-import static org.skife.galaxy.guava.MorePredicates.beanPropertyEquals;
+import static org.skife.galaxy.base.MorePredicates.beanPropertyEquals;
 
 @Command(name = "deploy", description = "Deploy tarball to an agent")
 public class AgentDeploy implements Callable<Void>
