@@ -5,6 +5,7 @@ import com.google.inject.servlet.GuiceFilter;
 import com.ning.http.client.AsyncHttpClient;
 import com.ning.http.client.Response;
 import org.apache.commons.io.FileUtils;
+import org.codehaus.jackson.map.ObjectMapper;
 import org.eclipse.jetty.server.DispatcherType;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.servlet.ServletContextHandler;
@@ -15,6 +16,7 @@ import org.skife.galaxy.http.JsonMappingAsyncHandler;
 import org.skife.galaxy.http.NotFoundServlet;
 import org.skife.galaxy.rep.Action;
 import org.skife.galaxy.rep.AgentDescription;
+import org.skife.galaxy.rep.AgentRegistrationDescription;
 import org.skife.galaxy.rep.ConsoleDescription;
 import org.skife.galaxy.rep.Link;
 import org.skife.galaxy.rep.SlotDescription;
@@ -120,7 +122,7 @@ public class ConsoleApiTest
         http.preparePost(register_agent.getUri().toString())
             .setHeader("Content-Type", MediaType.APPLICATION_JSON)
             .setBody(jsonWriter(ad))
-            .execute()
+            .execute(new JsonMappingAsyncHandler<AgentRegistrationDescription>(AgentRegistrationDescription.class))
             .get();
 
         ConsoleDescription updated_console = http.prepareGet("http://localhost:25365/")
@@ -130,6 +132,43 @@ public class ConsoleApiTest
 
         assertThat(find(updated_console.getAgents(), beanPropertyEquals("id", ad.getId())), equalTo(ad));
 
+    }
+
+    @Test
+    public void testCanGetAgentOffConsoleOnceRegistered() throws Exception
+    {
+        ConsoleDescription console = http.prepareGet("http://localhost:25365/")
+                                         .setHeader("accept", MediaType.APPLICATION_JSON)
+                                         .execute(new JsonMappingAsyncHandler<ConsoleDescription>(ConsoleDescription.class))
+                                         .get();
+
+        AgentDescription ad = new AgentDescription(Collections.<Link>emptyList(),
+                                                   Collections.<Action>emptyList(),
+                                                   Collections.<String, URI>emptyMap(),
+                                                   Collections.<SlotDescription>emptyList(),
+                                                   new File("/tmp/agent-root"),
+                                                   UUID.randomUUID());
+
+        Action register_agent = find(console.getActions(), beanPropertyEquals("rel", "register-agent"));
+        Response r = http.preparePost(register_agent.getUri().toString())
+                         .setHeader("Content-Type", MediaType.APPLICATION_JSON)
+                         .setBody(jsonWriter(ad))
+                         .execute()
+                         .get();
+        String location_uri = r.getHeader("Location");
+        assertThat(location_uri, notNullValue());
+
+        AgentRegistrationDescription descr = new ObjectMapper().readValue(r.getResponseBody(),
+                                                                          AgentRegistrationDescription.class);
+        Link agent_registration = find(descr.getLinks(), beanPropertyEquals("rel", "agent-registration"));
+        assertThat(agent_registration.getUri().toString(), equalTo(location_uri));
+
+        AgentDescription ad2 = http.prepareGet(location_uri)
+                                   .setHeader("Accept", MediaType.APPLICATION_JSON)
+                                   .execute(new JsonMappingAsyncHandler<AgentDescription>(AgentDescription.class))
+                                   .get();
+
+        assertThat(ad2, equalTo(ad));
     }
 
 }

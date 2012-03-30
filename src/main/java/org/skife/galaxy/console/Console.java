@@ -17,8 +17,13 @@ public class Console
         return ImmutableList.copyOf(agents.values());
     }
 
-    public void addAgent(AgentDescription agent)
+    public void register(AgentDescription agent)
     {
         this.agents.put(agent.getId(), agent);
+    }
+
+    public void checkinAgent(UUID id)
+    {
+        // noop for now
     }
 }

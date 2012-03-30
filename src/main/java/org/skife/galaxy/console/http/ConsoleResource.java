@@ -1,8 +1,8 @@
 package org.skife.galaxy.console.http;
 
-import org.skife.galaxy.agent.http.AgentResource;
 import org.skife.galaxy.console.Console;
 import org.skife.galaxy.rep.AgentDescription;
+import org.skife.galaxy.rep.AgentRegistrationDescription;
 import org.skife.galaxy.rep.ConsoleDescription;
 
 import javax.inject.Inject;
@@ -40,7 +40,11 @@ public class ConsoleResource
     @Path("register-agent")
     public Response registerAgent(AgentDescription agent)
     {
-        console.addAgent(agent);
-        return Response.ok().build();
+        console.register(agent);
+        return Response.created(ui.getBaseUriBuilder()
+                                  .path(ConsoleAgentResource.class)
+                                  .build(agent.getId()))
+                       .entity(AgentRegistrationDescription.from(agent, ui))
+                       .build();
     }
 }

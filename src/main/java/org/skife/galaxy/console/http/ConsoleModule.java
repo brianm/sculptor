@@ -25,6 +25,7 @@ public class ConsoleModule extends ServletModule
 
         // resources
         bind(ConsoleResource.class);
+        bind(ConsoleAgentResource.class);
 
         // real application model
         bind(Console.class).in(Scopes.SINGLETON);
