@@ -8,6 +8,7 @@ import com.google.common.collect.Maps;
 import com.google.common.io.Files;
 import com.google.common.util.concurrent.MoreExecutors;
 import com.ning.http.client.AsyncHttpClient;
+import org.joda.time.Duration;
 import org.skife.galaxy.ServerRoot;
 import org.skife.galaxy.agent.command.CommandFailedException;
 import org.skife.galaxy.agent.http.ConfigurationItem;
@@ -25,7 +26,6 @@ import java.io.IOException;
 import java.net.URI;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -59,14 +59,16 @@ public class Agent
     private final UUID     id;
     private final Set<URI> consoleUrls;
 
-    @Inject
+
     public Agent(@ServerRoot File root) throws IOException
     {
-        this(root, Collections.<URI>emptySet());
+        this(root, Collections.<URI>emptySet(), Duration.standardDays(1));
     }
 
-
-    public Agent(@ServerRoot File root, Collection<URI> consoles) throws IOException
+    @Inject
+    public Agent(@ServerRoot File root,
+                 @Consoles Set<URI> consoles,
+                 @ConsoleAnnouncement Duration announce) throws IOException
     {
         this.root = root;
         this.consoleUrls = ImmutableSet.copyOf(consoles);
@@ -96,7 +98,10 @@ public class Agent
             new ScheduledThreadPoolExecutor(consoles.size()),
             1, TimeUnit.SECONDS);
         for (URI console : consoles) {
-            ex.scheduleWithFixedDelay(new ConsoleReporter(console), 0, 1, TimeUnit.MINUTES);
+            ex.scheduleWithFixedDelay(new ConsoleReporter(console),
+                                      0,
+                                      announce.getMillis(),
+                                      TimeUnit.MILLISECONDS);
         }
     }
 

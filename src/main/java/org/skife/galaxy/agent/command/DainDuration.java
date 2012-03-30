@@ -21,17 +21,17 @@ import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public final class Duration implements Comparable<Duration>
+public final class DainDuration implements Comparable<DainDuration>
 {
-    public static Duration nanosSince(long start)
+    public static DainDuration nanosSince(long start)
     {
         long end = System.nanoTime();
-        return new Duration(end - start, TimeUnit.NANOSECONDS);
+        return new DainDuration(end - start, TimeUnit.NANOSECONDS);
     }
 
     private final double millis;
 
-    public Duration(double value, TimeUnit timeUnit)
+    public DainDuration(double value, TimeUnit timeUnit)
     {
         Preconditions.checkArgument(!Double.isInfinite(value), "value is infinite");
         Preconditions.checkArgument(!Double.isNaN(value), "value is not a number");
@@ -71,7 +71,7 @@ public final class Duration implements Comparable<Duration>
             return false;
         }
 
-        Duration duration = (Duration) o;
+        DainDuration duration = (DainDuration) o;
 
         if (Double.compare(duration.millis, millis) != 0) {
             return false;
@@ -88,7 +88,7 @@ public final class Duration implements Comparable<Duration>
     }
 
     @Override
-    public int compareTo(Duration o)
+    public int compareTo(DainDuration o)
     {
         return Double.compare(millis, o.millis);
     }
@@ -160,10 +160,14 @@ public final class Duration implements Comparable<Duration>
         return conversionFactor;
     }
 
+    public org.joda.time.Duration toJodaDuration()
+    {
+        return org.joda.time.Duration.millis((long)this.toMillis());
+    }
 
     private static final Pattern DURATION_PATTERN = Pattern.compile("^\\s*(\\d+(?:\\.\\d+)?)\\s*(s|m|h|d|ms)\\s*$");
 
-    public static Duration valueOf(String duration)
+    public static DainDuration valueOf(String duration)
         throws IllegalArgumentException
     {
         Preconditions.checkNotNull(duration, "duration is null");
@@ -201,6 +205,6 @@ public final class Duration implements Comparable<Duration>
             throw new IllegalArgumentException("Unknown time unit: " + timeUnitString);
         }
 
-        return new Duration(magnitude, timeUnit);
+        return new DainDuration(magnitude, timeUnit);
     }
 }

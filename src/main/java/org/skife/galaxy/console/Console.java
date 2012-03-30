@@ -22,7 +22,7 @@ public class Console
         this.agents.put(agent.getId(), agent);
     }
 
-    public void checkinAgent(UUID id)
+    public void checkInAgent(UUID id)
     {
         // noop for now
     }

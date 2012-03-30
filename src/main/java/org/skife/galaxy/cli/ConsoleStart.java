@@ -2,63 +2,46 @@ package org.skife.galaxy.cli;
 
 import com.google.common.base.Charsets;
 import com.google.common.base.Preconditions;
-import com.google.common.collect.ImmutableSet;
 import com.google.common.io.Files;
-import com.google.inject.servlet.GuiceFilter;
 import jnr.ffi.Library;
 import org.eclipse.jetty.server.DispatcherType;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.servlet.ServletContextHandler;
-import org.joda.time.Duration;
 import org.skife.cli.Command;
 import org.skife.cli.Option;
-import org.skife.galaxy.agent.command.DainDuration;
-import org.skife.galaxy.agent.http.GuiceAgentListener;
+import org.skife.galaxy.console.http.GuiceConsoleListener;
 import org.skife.galaxy.http.NotFoundServlet;
 import org.skife.gressil.Daemon;
 
 import java.io.File;
-import java.net.URI;
-import java.util.Collections;
 import java.util.EnumSet;
-import java.util.List;
 import java.util.concurrent.Callable;
 
-@Command(name = "start", description = "Start and daemonize an agent")
-public class AgentStart implements Callable<Void>
+@Command(name="start", description = "Start and daemonize a console")
+public class ConsoleStart implements Callable<Void>
 {
-
-    @Option(name = {"-a", "--announce"},
-            title = "announcement-interval",
-            description = "how frequently to announce, default is 1m")
-    public String announcementInterval = "1m";
-
     @Option(name = {"-r", "--root"},
             title = "root",
             description = "Root directory for deployment slots",
-            configuration = "agent.root")
+            configuration = "console.root")
     public File root;
 
     @Option(name = {"-P", "--port"},
             title = "port",
             description = "Port for HTTP server, default is 25365",
-            configuration = "agent.port")
+            configuration = "console.port")
     public int port = 25365;
 
     @Option(name = {"-p", "--pidfile"},
             title = "pidfile",
             description = "path to pidfile", configuration = "agent.pidfile")
-    public File pidfile = new File("sculptor-agent.pid");
+    public File pidfile = new File("sculptor-console.pid");
 
     @Option(name = {"-l", "--log"},
             title = "log-file",
             description = "Log file",
-            configuration = "agent.log")
+            configuration = "console.log")
     public File logfile = new File("/dev/null");
-
-
-    @Option(name = {"-c", "--console"}, title = "console-url", description = "URL for console to report to, multiple okay")
-    public List<URI> consoles = Collections.emptyList();
 
     public Void call() throws Exception
     {
@@ -83,11 +66,8 @@ public class AgentStart implements Callable<Void>
 
         Server server = new Server(port);
         ServletContextHandler handler = new ServletContextHandler(ServletContextHandler.NO_SESSIONS);
-        handler.addEventListener(new GuiceAgentListener(root,
-                                                        false,
-                                                        ImmutableSet.copyOf(consoles),
-                                                        DainDuration.valueOf(announcementInterval).toJodaDuration()));
-        handler.addFilter(GuiceFilter.class, "/*", EnumSet.allOf(DispatcherType.class));
+        handler.addEventListener(new GuiceConsoleListener(root, false));
+        handler.addFilter(com.google.inject.servlet.GuiceFilter.class, "/*", EnumSet.allOf(DispatcherType.class));
         handler.addServlet(NotFoundServlet.class, "/*");
         server.setHandler(handler);
 
@@ -96,5 +76,6 @@ public class AgentStart implements Callable<Void>
 
         return null;
     }
+
 
 }

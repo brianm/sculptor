@@ -41,7 +41,7 @@ public class ConsoleAgentResource
     @POST
     public Response checkIn(@PathParam("id") UUID id)
     {
-        console.checkinAgent(id);
+        console.checkInAgent(id);
         return Response.ok().build();
     }
 

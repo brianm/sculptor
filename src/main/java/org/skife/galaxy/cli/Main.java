@@ -52,6 +52,8 @@ public class Main
             .withDescription("Manage a console")
             .withDefaultCommand(Help.class)
             .withCommand(Help.class)
+            .withCommand(ConsoleStart.class)
+            .withCommand(ConsoleStop.class)
             .withCommand(ConsoleRun.class);
 
         builder.build().parse(args).call();
