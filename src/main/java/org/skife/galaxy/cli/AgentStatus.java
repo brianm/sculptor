@@ -13,18 +13,14 @@ import java.util.concurrent.Callable;
 @Command(name = "status", description = "Retrieve agent status")
 public class AgentStatus implements Callable<Void>
 {
-    @Option(name = {"-p", "--pidfile"}, description = "Pidfile")
-    public File pidfile;
-
-    @Option(name = {"-c", "--config"}, description = "Configuration file", type = OptionType.GLOBAL)
-    public File config = new File("/etc/sculptor/agent.conf");
+    @Option(name = {"-p", "--pidfile"},
+            title = "pidfile",
+            description = "path to pidfile", configuration = "agent.pidfile")
+    public File pidfile = new File("sculptor-agent.pid");
 
     @Override
     public Void call() throws Exception
     {
-        ConfigFile cf = new ConfigFile(config);
-        pidfile = cf.fallbackFrom(pidfile, "pidfile");
-
         if (pidfile.exists()) {
             int pid = Integer.valueOf(Files.readFirstLine(pidfile, Charsets.US_ASCII));
             LibC c = Library.loadLibrary("c", LibC.class);

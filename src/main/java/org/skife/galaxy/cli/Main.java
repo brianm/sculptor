@@ -25,7 +25,8 @@ public class Main
     {
 
         Cli.CliBuilder<Callable> builder = Cli.buildCli("sculptor", Callable.class)
-                                              .withConfiguration(fromProperties(new File("sculptor.conf")))
+                                              .withConfiguration(fromProperties(new File("/etc/sculptor.conf"),
+                                                                                new File("sculptor.conf")))  // same dir overrides /etc
                                               .withDescription("A Galaxy implementation")
                                               .withCommand(ConsoleList.class)
                                               .withCommand(SlotStart.class)
