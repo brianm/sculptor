@@ -27,16 +27,22 @@ import java.util.Map;
 import java.util.concurrent.Callable;
 
 import static com.google.common.base.Preconditions.checkState;
+import static com.google.common.collect.Iterables.find;
 import static org.skife.galaxy.base.MorePredicates.beanPropertyEquals;
+import static org.skife.galaxy.base.MorePredicates.relationShipEquals;
+import static org.skife.galaxy.http.JsonMappingAsyncHandler.fromJson;
 
 @Command(name = "deploy", description = "Deploy tarball to an agent")
 public class AgentDeploy implements Callable<Void>
 {
-    @Option(description = "Agent URL", name = {"-a", "--agent"}, title = "agent-url")
+    @Option(description = "Agent URL", name = {"-a", "--agent"}, title = "agent-url", configuration = "agent")
     public URI agentUri = URI.create("http://localhost:25365/");
 
     @Option(description = "Name for the deployed thing", name = {"-n", "--name"}, title = "Deployment name")
     public String name = "Someone forgot to name me!";
+
+    @Option(name = {"-s", "--start"}, description = "Start the slot after deploying the bundle")
+    public boolean start = false;
 
     @Option(name = {"-c", "--config"},
             title = "config-key-value-pair",
@@ -63,7 +69,7 @@ public class AgentDeploy implements Callable<Void>
         mapper.configure(SerializationConfig.Feature.INDENT_OUTPUT, true);
 
         Splitter first_equals = Splitter.on('=').limit(1);
-        ImmutableMap.Builder<String, URI> config_builder =  ImmutableMap.builder();
+        ImmutableMap.Builder<String, URI> config_builder = ImmutableMap.builder();
         for (String raw : rawConfiguration) {
             Iterator<String> itty = first_equals.split(raw).iterator();
             checkState(itty.hasNext(), "--config must be of the form <path>=<url>");
@@ -78,7 +84,7 @@ public class AgentDeploy implements Callable<Void>
         try {
             AgentDescription root = http.prepareGet(agentUri.toString())
                                         .setHeader("accept", MediaType.APPLICATION_JSON)
-                                        .execute(new JsonMappingAsyncHandler<AgentDescription>(AgentDescription.class))
+                                        .execute(fromJson(AgentDescription.class))
                                         .get();
 
             Action deploy = Iterables.find(root.getActions(), beanPropertyEquals("rel", "deploy"));
@@ -88,10 +94,13 @@ public class AgentDeploy implements Callable<Void>
             SlotDescription slot = http.preparePost(deploy.getUri().toString())
                                        .setHeader("content-type", MediaType.APPLICATION_JSON)
                                        .setBody(mapper.writeValueAsString(description))
-                                       .execute(new JsonMappingAsyncHandler<SlotDescription>(SlotDescription.class))
+                                       .execute(fromJson(SlotDescription.class))
                                        .get();
 
-            System.out.println(mapper.writeValueAsString(slot));
+
+            if (start) {
+                SlotStart.startFromAgent(root.getSelfLink().getUri(), slot.getId().toString(), http);
+            }
         }
         finally {
             http.close();

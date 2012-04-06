@@ -6,9 +6,10 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 import com.google.common.io.Files;
 import com.google.common.util.concurrent.MoreExecutors;
+import org.apache.log4j.Logger;
 import org.skife.galaxy.ServerRoot;
-import org.skife.galaxy.base.command.CommandFailedException;
 import org.skife.galaxy.agent.http.ConfigurationItem;
+import org.skife.galaxy.base.command.CommandFailedException;
 import org.skife.jdbi.v2.DBI;
 import org.skife.jdbi.v2.StatementContext;
 import org.skife.jdbi.v2.sqlobject.Bind;
@@ -31,8 +32,6 @@ import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
-import static com.google.common.util.concurrent.MoreExecutors.getExitingScheduledExecutorService;
-
 public class Agent
 {
     static {
@@ -44,13 +43,15 @@ public class Agent
         }
     }
 
+    private static final Logger log = Logger.getLogger(Agent.class);
+
     public static final ExecutorService EXEC_POOL = MoreExecutors.getExitingExecutorService(new ThreadPoolExecutor(1, 100, 100, TimeUnit.MILLISECONDS, new LinkedBlockingDeque<Runnable>()));
 
     private final Map<UUID, Slot> slots = Maps.newConcurrentMap();
 
-    private final File     root;
-    private final Dao      dao;
-    private final UUID     id;
+    private final File root;
+    private final Dao  dao;
+    private final UUID id;
 
     @Inject
     public Agent(@ServerRoot File root)
@@ -109,9 +110,11 @@ public class Agent
             slots.get(slotId).clear();
         }
         catch (IOException e) {
+            log.warn("unable to clear slot" + slotId, e);
             throw Throwables.propagate(e);
         }
         slots.remove(slotId);
+        log.info("Cleared slot " + slotId);
     }
 
     public void addEnvironmentConfiguration(String path, URI source)

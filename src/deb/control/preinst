@@ -8,6 +8,14 @@ then
     chown -R sculptor.sculptor /var/log/sculptor
 fi
 
+if [ ! -d /var/log/sculptor ]
+then
+    mkdir -p /var/log/sculptor
+    touch /var/log/sculptor/console.log
+    chown -R sculptor.sculptor /var/log/sculptor
+fi
+
+
 if [ ! -d /var/sculptor ]
 then
     mkdir -p /var/sculptor

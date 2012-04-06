@@ -1,4 +1,7 @@
 #!/bin/sh
 
-update-rc.d sculptor-agent defaults
-service sculptor-agent start
+# update-rc.d sculptor-agent defaults
+# update-rc.d sculptor-console defaults
+
+# service sculptor-agent start
+# service sculptor-console start

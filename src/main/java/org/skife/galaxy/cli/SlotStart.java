@@ -17,6 +17,7 @@ import org.skife.galaxy.rep.SlotDescription;
 import javax.ws.rs.core.MediaType;
 import java.io.IOException;
 import java.net.URI;
+import java.util.UUID;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 
@@ -27,8 +28,8 @@ import static org.skife.galaxy.http.JsonMappingAsyncHandler.fromJson;
 @Command(name = "start", description = "start service in the specified slot")
 public class SlotStart implements Callable<Void>
 {
-    @Option(description = "Agent URL", name = {"-a", "--agent"}, title = "agent-url")
-    public URI agentUri;
+    @Option(description = "Agent URL", name = {"-a", "--agent"}, title = "agent-url", configuration = "agent")
+    public URI agentUri = URI.create("http://localhost:25365/");
 
     @Option(description = "Console URL", name = {"-c", "--console"}, title = "agent-url", configuration = "console")
     public URI consoleUti;
@@ -42,10 +43,10 @@ public class SlotStart implements Callable<Void>
         AsyncHttpClient http = new AsyncHttpClient();
         try {
             if (agentUri != null) {
-                startFromAgent(agentUri, http);
+                startFromAgent(agentUri, slotId, http);
             }
             else if (consoleUti != null) {
-                startFromConsole(http);
+                startFromConsole(consoleUti, slotId, http);
             }
             else {
                 System.err.println("You must specify either an agent or console!");
@@ -58,7 +59,7 @@ public class SlotStart implements Callable<Void>
         return null;
     }
 
-    private void startFromConsole(AsyncHttpClient http) throws Exception
+    public static void startFromConsole(URI consoleUti, String slotId, AsyncHttpClient http) throws Exception
     {
         ConsoleDescription cd = http.prepareGet(consoleUti.toString())
                                     .setHeader("Accept", MediaType.APPLICATION_JSON)
@@ -67,15 +68,18 @@ public class SlotStart implements Callable<Void>
         for (ConsoleAgentDescription agentDescription : cd.getAgents()) {
             for (SlotDescription slot : agentDescription.getAgent().getSlots()) {
                 if (slot.getId().toString().startsWith(slotId)) {
-                    startFromAgent(find(agentDescription.getAgent().getLinks(), beanPropertyEquals("rel", "self")).getUri(), http);
+                    startFromAgent(find(agentDescription.getAgent().getLinks(), beanPropertyEquals("rel", "self")).getUri(),
+                                   slotId,
+                                   http);
                     return;
                 }
             }
         }
     }
 
-    private void startFromAgent(URI agent, AsyncHttpClient http) throws Exception
+    public static void startFromAgent(URI agent, String slotId, AsyncHttpClient http) throws Exception
     {
+        System.err.println("STARTING!!!!!!!!!");
         AgentDescription root = http.prepareGet(agent.toString())
                                     .setHeader("accept", MediaType.APPLICATION_JSON)
                                     .execute(new JsonMappingAsyncHandler<AgentDescription>(AgentDescription.class))

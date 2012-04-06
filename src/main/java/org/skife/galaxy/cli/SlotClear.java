@@ -22,8 +22,8 @@ import static com.google.common.collect.Iterables.find;
 import static org.skife.galaxy.base.MorePredicates.beanPropertyEquals;
 import static org.skife.galaxy.http.JsonMappingAsyncHandler.fromJson;
 
-@Command(name = "stop", description = "stop service in the specified slot")
-public class SlotStop implements Callable<Void>
+@Command(name = "clear", description = "remove a slot")
+public class SlotClear implements Callable<Void>
 {
     @Option(description = "Agent URL", name = {"-a", "--agent"}, title = "agent-url", configuration = "agent")
     public URI agentUri = URI.create("http://localhost:25365/");
@@ -40,7 +40,7 @@ public class SlotStop implements Callable<Void>
         AsyncHttpClient http = new AsyncHttpClient();
         try {
             if (agentUri != null) {
-                stopFromAgwnt(agentUri, http);
+                clearFromAgent(agentUri, http);
             }
             else if (consoleUti != null) {
                 stopFromConsole(http);
@@ -65,15 +65,15 @@ public class SlotStop implements Callable<Void>
         for (ConsoleAgentDescription agentDescription : cd.getAgents()) {
             for (SlotDescription slot : agentDescription.getAgent().getSlots()) {
                 if (slot.getId().toString().startsWith(slotId)) {
-                    stopFromAgwnt(find(agentDescription.getAgent()
-                                                       .getLinks(), beanPropertyEquals("rel", "self")).getUri(), http);
+                    clearFromAgent(find(agentDescription.getAgent()
+                                                        .getLinks(), beanPropertyEquals("rel", "self")).getUri(), http);
                     return;
                 }
             }
         }
     }
 
-    private void stopFromAgwnt(URI agent, AsyncHttpClient http) throws Exception
+    private void clearFromAgent(URI agent, AsyncHttpClient http) throws Exception
     {
         AgentDescription root = http.prepareGet(agent.toString())
                                     .setHeader("accept", MediaType.APPLICATION_JSON)
@@ -82,14 +82,14 @@ public class SlotStop implements Callable<Void>
 
         for (SlotDescription slot : root.getSlots()) {
             if (slot.getId().toString().startsWith(slotId)) {
-                Action start = Iterables.find(slot.getActions(), beanPropertyEquals("rel", "stop"));
+                Action start = Iterables.find(slot.getActions(), beanPropertyEquals("rel", "clear"));
                 Response r = http.prepareRequest(new RequestBuilder(start.getMethod())
                                                      .setUrl(start.getUri().toString())
                                                      .setHeader("content-type", MediaType.APPLICATION_JSON)
                                                      .build())
-                                 .execute().get();
+                                 .execute()
+                                 .get();
                 int status = r.getStatusCode();
-
                 if (status >= 400) {
                     // user error
                     System.err.println(r.getResponseBody());
@@ -97,4 +97,5 @@ public class SlotStop implements Callable<Void>
             }
         }
     }
+
 }

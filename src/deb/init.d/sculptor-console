@@ -1,0 +1,17 @@
+#!/bin/sh
+
+case "$1" in
+    start)
+        sudo -u sculptor /usr/bin/sculptor console start
+        ;;
+    stop)
+        sudo -u sculptor /usr/bin/sculptor console stop
+        ;;
+    status)
+        sudo -u sculptor /usr/bin/sculptor console status
+        ;;
+    restart|reload|force-reload)
+        sudo -u sculptor /usr/bin/sculptor console stop
+        sudo -u sculptor /usr/bin/sculptor console start
+        ;;
+esac

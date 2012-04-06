@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableList;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.codehaus.jackson.annotate.JsonCreator;
+import org.codehaus.jackson.annotate.JsonIgnore;
 import org.codehaus.jackson.annotate.JsonProperty;
 
 import java.io.File;
@@ -12,6 +13,9 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+
+import static com.google.common.collect.Iterables.find;
+import static org.skife.galaxy.base.MorePredicates.beanPropertyEquals;
 
 public class AgentDescription
 {
@@ -38,6 +42,11 @@ public class AgentDescription
         this.id = id;
     }
 
+    @JsonIgnore
+    public Link getSelfLink()
+    {
+        return find(_links, beanPropertyEquals("rel", "self"));
+    }
 
     public UUID getId()
     {

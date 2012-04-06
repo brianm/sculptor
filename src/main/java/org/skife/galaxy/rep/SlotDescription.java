@@ -3,6 +3,7 @@ package org.skife.galaxy.rep;
 import com.google.common.collect.ImmutableList;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
+import org.codehaus.jackson.annotate.JsonIgnore;
 import org.codehaus.jackson.annotate.JsonProperty;
 import org.skife.galaxy.agent.Slot;
 import org.skife.galaxy.agent.http.SlotResource;
@@ -14,7 +15,9 @@ import java.net.URI;
 import java.util.List;
 import java.util.UUID;
 
+import static com.google.common.collect.Iterables.find;
 import static java.util.Arrays.asList;
+import static org.skife.galaxy.base.MorePredicates.beanPropertyEquals;
 
 public class SlotDescription
 {
@@ -24,8 +27,7 @@ public class SlotDescription
     private final UUID         id;
     private final File         deployDir;
     private final String       name;
-    private final URI bundleUrl;
-
+    private final URI          bundleUrl;
 
     public SlotDescription(@JsonProperty("_links") List<Link> links,
                            @JsonProperty("_actions") List<Action> actions,
@@ -69,7 +71,7 @@ public class SlotDescription
                                     .build(slot.getId());
 
         URI clear_uri = UriBuilder.fromUri(slot_uri)
-                                  .path(SlotResource.class, "stop")
+                                  .path(SlotResource.class, "clear")
                                   .build(slot.getId());
 
         List<Action> _actions = asList(new Action("start", "POST", start_uri),
@@ -135,5 +137,11 @@ public class SlotDescription
     public int hashCode()
     {
         return HashCodeBuilder.reflectionHashCode(this);
+    }
+
+    @JsonIgnore
+    public Link getSelfLink()
+    {
+        return find(_links, beanPropertyEquals("rel", "self"));
     }
 }

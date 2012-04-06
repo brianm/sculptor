@@ -1,5 +1,6 @@
 package org.skife.galaxy.agent.http;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.eventbus.EventBus;
 import com.google.inject.Provides;
@@ -27,7 +28,14 @@ import org.skife.galaxy.http.StaticServlet;
 import org.skife.galaxy.http.TemplateRoot;
 
 import java.io.File;
+import java.net.Inet4Address;
+import java.net.InetAddress;
+import java.net.NetworkInterface;
+import java.net.SocketException;
 import java.net.URI;
+import java.net.UnknownHostException;
+import java.util.Collections;
+import java.util.List;
 import java.util.Set;
 
 public class AgentModule extends ServletModule
@@ -42,12 +50,20 @@ public class AgentModule extends ServletModule
 
     public AgentModule(String host, int port, Set<URI> consoles, File agentRoot, boolean debug, Duration consoleAnnounce)
     {
-        this.host = host;
         this.port = port;
         this.consoleAnnounce = consoleAnnounce;
         this.consoles = ImmutableSet.copyOf(consoles);
         this.agentRoot = agentRoot;
         this.debug = debug;
+
+        if ("0.0.0.0".equals(host)) {
+            // this is a worthless host for URL building, try to infer a useful public address
+            InetAddress addy = findPublicIp();
+            this.host = addy.getHostAddress();
+        }
+        else {
+            this.host = host;
+        }
     }
 
     @Override
@@ -93,5 +109,77 @@ public class AgentModule extends ServletModule
         mapper.configure(SerializationConfig.Feature.INDENT_OUTPUT, true);
         mapper.configure(JsonParser.Feature.ALLOW_UNQUOTED_FIELD_NAMES, true);
         return new JacksonJsonProvider(mapper);
+    }
+
+
+
+
+    private static InetAddress findPublicIp()
+    {
+        // Check if local host address is a good v4 address
+        InetAddress localAddress = null;
+        try {
+            localAddress = InetAddress.getLocalHost();
+            if (isGoodV4Address(localAddress)) {
+                return localAddress;
+            }
+        }
+        catch (UnknownHostException ignored) {
+        }
+        if (localAddress == null) {
+            try {
+                localAddress = InetAddress.getByAddress(new byte[]{127, 0, 0, 1});
+            }
+            catch (UnknownHostException e) {
+                throw new AssertionError("Could not get local ip address");
+            }
+        }
+
+        // check all up network interfaces for a good v4 address
+        for (NetworkInterface networkInterface : getGoodNetworkInterfaces()) {
+            for (InetAddress address : Collections.list(networkInterface.getInetAddresses())) {
+                if (isGoodV4Address(address)) {
+                    return address;
+                }
+            }
+        }
+        // check all up network interfaces for a good v6 address
+//        for (NetworkInterface networkInterface : getGoodNetworkInterfaces()) {
+//            for (InetAddress address : Collections.list(networkInterface.getInetAddresses())) {
+//                if (isGoodV6Address(address)) {
+//                    return address;
+//                }
+//            }
+//        }
+        // just return the local host address
+        // it is most likely that this is a disconnected developer machine
+        return localAddress;
+    }
+
+    private static List<NetworkInterface> getGoodNetworkInterfaces()
+    {
+        ImmutableList.Builder<NetworkInterface> builder = ImmutableList.builder();
+        try {
+            for (NetworkInterface networkInterface : Collections.list(NetworkInterface.getNetworkInterfaces())) {
+                try {
+                    if (!networkInterface.isLoopback() && networkInterface.isUp()) {
+                        builder.add(networkInterface);
+                    }
+                }
+                catch (Exception ignored) {
+                }
+            }
+        }
+        catch (SocketException e) {
+        }
+        return builder.build();
+    }
+
+    private static boolean isGoodV4Address(InetAddress address)
+    {
+        return address instanceof Inet4Address &&
+               !address.isAnyLocalAddress() &&
+               !address.isLoopbackAddress() &&
+               !address.isMulticastAddress();
     }
 }

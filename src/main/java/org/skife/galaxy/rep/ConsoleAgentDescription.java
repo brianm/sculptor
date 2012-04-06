@@ -2,6 +2,7 @@ package org.skife.galaxy.rep;
 
 import com.google.common.collect.ImmutableList;
 import org.codehaus.jackson.annotate.JsonCreator;
+import org.codehaus.jackson.annotate.JsonIgnore;
 import org.codehaus.jackson.annotate.JsonProperty;
 import org.skife.galaxy.console.http.ConsoleAgentResource;
 
@@ -9,7 +10,9 @@ import javax.ws.rs.core.UriInfo;
 import java.util.Collections;
 import java.util.List;
 
+import static com.google.common.collect.Iterables.find;
 import static java.util.Arrays.asList;
+import static org.skife.galaxy.base.MorePredicates.beanPropertyEquals;
 
 public class ConsoleAgentDescription
 {
@@ -34,7 +37,6 @@ public class ConsoleAgentDescription
     {
         return agent;
     }
-
     @JsonProperty("_links")
     public List<Link> getLinks()
     {

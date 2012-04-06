@@ -25,14 +25,14 @@ public class Main
     {
 
         Cli.CliBuilder<Callable> builder = Cli.buildCli("sculptor", Callable.class)
-                                              .withConfiguration(fromProperties(new File("/etc/sculptor.conf"),
-                                                                                new File("sculptor.conf")))  // same dir overrides /etc
-                                              .withDescription("A Galaxy implementation")
-                                              .withCommand(ConsoleList.class)
-                                              .withCommand(SlotStart.class)
-                                              .withCommand(SlotStop.class)
-                                              .withCommand(Help.class)
-                                              .withDefaultCommand(Help.class);
+            .withConfiguration(fromProperties(new File("/etc/sculptor.conf"),
+                                              new File("sculptor.conf")))  // same dir overrides /etc
+            .withDescription("A Galaxy implementation")
+            .withCommand(ConsoleList.class)
+            .withCommand(SlotStart.class)
+            .withCommand(SlotStop.class)
+            .withCommand(Help.class)
+            .withDefaultCommand(Help.class);
 
         builder.withGroup("agent")
                .withDescription("Manage an agent")
@@ -50,6 +50,7 @@ public class Main
                .withDefaultCommand(Help.class)
                .withCommand(Help.class)
                .withCommand(SlotStart.class)
+               .withCommand(SlotClear.class)
                .withCommand(SlotStop.class);
 
         builder.withGroup("console")
@@ -59,6 +60,7 @@ public class Main
                .withCommand(ConsoleStart.class)
                .withCommand(ConsoleStop.class)
                .withCommand(ConsoleRun.class)
+               .withCommand(ConsoleStatus.class)
                .withCommand(ConsoleList.class);
 
         builder.build().parse(args).call();

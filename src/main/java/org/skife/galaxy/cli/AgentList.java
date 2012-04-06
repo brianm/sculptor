@@ -14,7 +14,7 @@ import java.util.concurrent.Callable;
 @Command(name = {"list", "ls"}, description = "List slots on an agent")
 public class AgentList implements Callable<Void>
 {
-    @Option(description = "Agent URL", name = {"-a", "--agent"}, title = "agent-url")
+    @Option(description = "Agent URL", name = {"-a", "--agent"}, title = "agent-url", configuration = "agent")
     public URI agentUri = URI.create("http://localhost:25365/");
 
     @Override
@@ -28,7 +28,11 @@ public class AgentList implements Callable<Void>
                                         .get();
 
             for (SlotDescription slot : root.getSlots()) {
-                System.out.printf("%s\t%s\t%s\t%s\n", slot.getId(), slot.getName(),  slot.getBundleUrl(), slot.getState());
+                System.out.printf("%s\t%s\t%s\t%s\n",
+                                  slot.getId(),
+                                  slot.getName(),
+                                  slot.getSelfLink().getUri(),
+                                  slot.getState());
             }
 
             return null;
