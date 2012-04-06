@@ -42,7 +42,7 @@ public class ConsoleStart implements Callable<Void>
 
     @Option(name = {"-p", "--pidfile"},
             title = "pidfile",
-            description = "path to pidfile", configuration = "agent.pidfile")
+            description = "path to pidfile", configuration = "console.pidfile")
     public File pidfile = new File("sculptor-console.pid");
 
     @Option(name = {"-l", "--log"},
