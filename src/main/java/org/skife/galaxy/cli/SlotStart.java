@@ -79,7 +79,6 @@ public class SlotStart implements Callable<Void>
 
     public static void startFromAgent(URI agent, String slotId, AsyncHttpClient http) throws Exception
     {
-        System.err.println("STARTING!!!!!!!!!");
         AgentDescription root = http.prepareGet(agent.toString())
                                     .setHeader("accept", MediaType.APPLICATION_JSON)
                                     .execute(new JsonMappingAsyncHandler<AgentDescription>(AgentDescription.class))
