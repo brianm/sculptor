@@ -19,7 +19,8 @@ public class ConsoleList implements Callable<Void>
 
     @Option(name = {"-c", "--console"},
             title = "console",
-            description = "Console URL, default is http://localhost:36525")
+            description = "Console URL, default is http://localhost:36525",
+            configuration = "console")
     public URI console = URI.create("http://localhost:36525");
 
     @Override
@@ -33,7 +34,7 @@ public class ConsoleList implements Callable<Void>
                                         .get();
             for (ConsoleAgentDescription d : cd.getAgents()) {
                 for (SlotDescription slot : d.getAgent().getSlots()) {
-                    System.out.printf("%s\t%s\t%s\n", slot.getId(), slot.getName(), slot.getState());
+                    System.out.printf("%s\t%s\t%s\t%s\n", slot.getId(), slot.getName(),  slot.getBundleUrl(), slot.getState());
                 }
             }
         }

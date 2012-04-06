@@ -28,7 +28,7 @@ public class AgentList implements Callable<Void>
                                         .get();
 
             for (SlotDescription slot : root.getSlots()) {
-                System.out.printf("%s\t%s\t%s\n", slot.getId(), slot.getName(), slot.getState());
+                System.out.printf("%s\t%s\t%s\t%s\n", slot.getId(), slot.getName(),  slot.getBundleUrl(), slot.getState());
             }
 
             return null;

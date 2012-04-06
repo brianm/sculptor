@@ -32,7 +32,7 @@ public class SlotDescriptionTest
         UUID id = UUID.randomUUID();
 
         File dir = new File("/tmp/sandwich");
-        SlotDescription sd = new SlotDescription(links, actions, "running", id, dir, "hello world");
+        SlotDescription sd = new SlotDescription(links, actions, "running", id, dir, "hello world", URI.create("http://example.com/bundle.tgz"));
 
         String json  =mapper.writeValueAsString(sd);
         SlotDescription sd2 = mapper.readValue(json, SlotDescription.class);

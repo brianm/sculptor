@@ -24,6 +24,7 @@ public class SlotDescription
     private final UUID         id;
     private final File         deployDir;
     private final String       name;
+    private final URI bundleUrl;
 
 
     public SlotDescription(@JsonProperty("_links") List<Link> links,
@@ -31,11 +32,13 @@ public class SlotDescription
                            @JsonProperty("state") String state,
                            @JsonProperty("id") UUID id,
                            @JsonProperty("deploy_dir") File deployDir,
-                           @JsonProperty("name") String name)
+                           @JsonProperty("name") String name,
+                           @JsonProperty("bundle-url") URI bundleUrl)
     {
         this.id = id;
         this.deployDir = deployDir;
         this.name = name;
+        this.bundleUrl = bundleUrl;
         this._links = ImmutableList.copyOf(links);
         this._actions = ImmutableList.copyOf(actions);
         this.state = state;
@@ -74,9 +77,20 @@ public class SlotDescription
                                        new Action("clear", "POST", clear_uri),
                                        new Action("stop", "POST", stop_uri));
 
-        return new SlotDescription(links, _actions, slot.getState(), slot.getId(), slot.getDeployDir(), slot.getName());
+        return new SlotDescription(links,
+                                   _actions,
+                                   slot.getState(),
+                                   slot.getId(),
+                                   slot.getDeployDir(),
+                                   slot.getName(),
+                                   slot.getBundleUrl());
     }
 
+    @JsonProperty("bundle-url")
+    public URI getBundleUrl()
+    {
+        return bundleUrl;
+    }
 
     @JsonProperty("deploy_dir")
     public File getDeployDir()

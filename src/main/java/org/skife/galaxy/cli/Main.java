@@ -27,6 +27,9 @@ public class Main
         Cli.CliBuilder<Callable> builder = Cli.buildCli("sculptor", Callable.class)
                                               .withConfiguration(fromProperties(new File("sculptor.conf")))
                                               .withDescription("A Galaxy implementation")
+                                              .withCommand(ConsoleList.class)
+                                              .withCommand(SlotStart.class)
+                                              .withCommand(SlotStop.class)
                                               .withCommand(Help.class)
                                               .withDefaultCommand(Help.class);
 
