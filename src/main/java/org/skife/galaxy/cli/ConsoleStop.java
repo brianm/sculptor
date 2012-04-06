@@ -16,7 +16,7 @@ public class ConsoleStop implements Callable<Void>
     @Option(name = {"-p", "--pidfile"},
             title = "pidfile",
             description = "path to pidfile",
-            configuration = "consle.pidfile")
+            configuration = "console.pidfile")
     public File pidfile = new File("sculptor-console.pid");
 
     @Override

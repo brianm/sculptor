@@ -9,6 +9,7 @@ import org.junit.Test;
 
 import java.io.File;
 import java.net.URI;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -40,7 +41,8 @@ public class AgentDescriptionTest
                                                    environment,
                                                    slots,
                                                    root,
-                                                   id);
+                                                   id,
+                                                   Collections.<URI>emptyList());
 
         String json  =mapper.writeValueAsString(ad);
         AgentDescription ad2 = mapper.readValue(json, AgentDescription.class);

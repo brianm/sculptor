@@ -9,6 +9,7 @@ import org.codehaus.jackson.annotate.JsonProperty;
 
 import java.io.File;
 import java.net.URI;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -25,6 +26,7 @@ public class AgentDescription
     private final List<SlotDescription> slots;
     private final List<Action>          _actions;
     private final List<Link>            _links;
+    private final List<URI>             consoles;
 
     @JsonCreator
     public AgentDescription(@JsonProperty("_links") List<Link> _links,
@@ -32,14 +34,22 @@ public class AgentDescription
                             @JsonProperty("environment") Map<String, URI> environment,
                             @JsonProperty("slots") List<SlotDescription> slots,
                             @JsonProperty("root") File root,
-                            @JsonProperty("id") UUID id)
+                            @JsonProperty("id") UUID id,
+                            @JsonProperty("consoles") Collection<URI> consoles)
     {
-        this.slots =  slots == null ? Collections.<SlotDescription>emptyList() : ImmutableList.copyOf(slots);
+        this.slots = slots == null ? Collections.<SlotDescription>emptyList() : ImmutableList.copyOf(slots);
         this._actions = ImmutableList.copyOf(_actions);
         this._links = ImmutableList.copyOf(_links);
+        this.consoles = ImmutableList.copyOf(consoles);
         this.environment = environment;
         this.root = root;
         this.id = id;
+    }
+
+
+    public List<URI> getConsoles()
+    {
+        return consoles;
     }
 
     @JsonIgnore

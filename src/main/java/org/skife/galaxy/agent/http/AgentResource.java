@@ -5,6 +5,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.sun.jersey.api.view.Viewable;
 import org.skife.galaxy.agent.Agent;
+import org.skife.galaxy.agent.Consoles;
 import org.skife.galaxy.agent.Deployment;
 import org.skife.galaxy.agent.Slot;
 import org.skife.galaxy.http.ErrorReport;
@@ -32,6 +33,7 @@ import java.net.URI;
 import java.net.UnknownHostException;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 
 import static java.util.Arrays.asList;
@@ -42,13 +44,15 @@ public class AgentResource
     private final UriInfo      ui;
     private final Agent        agent;
     private final ScratchSpace scratch;
+    private final Set<URI> consoles;
 
     @Inject
-    public AgentResource(UriInfo ui, Agent agent, ScratchSpace scratch)
+    public AgentResource(UriInfo ui, Agent agent, ScratchSpace scratch, @Consoles Set<URI> consoles)
     {
         this.ui = ui;
         this.agent = agent;
         this.scratch = scratch;
+        this.consoles = consoles;
     }
 
     @GET
@@ -81,7 +85,8 @@ public class AgentResource
                                                     agent.getEnvironmentConfig(),
                                                     describe(agent.getSlots()),
                                                     agent.getRoot(),
-                                                    agent.getId()))
+                                                    agent.getId(),
+                                                    consoles))
                        .build();
     }
 

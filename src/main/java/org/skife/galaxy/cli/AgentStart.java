@@ -3,6 +3,7 @@ package org.skife.galaxy.cli;
 import com.google.common.base.Charsets;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Lists;
 import com.google.common.io.Files;
 import com.google.inject.servlet.GuiceFilter;
 import jnr.ffi.Library;
@@ -62,9 +63,11 @@ public class AgentStart implements Callable<Void>
             configuration = "agent.log")
     public File logfile = new File("/dev/null");
 
-
-    @Option(name = {"-c", "--console"}, title = "console-url", description = "URL for console to report to, multiple okay")
-    public List<URI> consoles = Collections.emptyList();
+    @Option(name = {"-c", "--console"},
+            title = "console-url",
+            description = "URL for console to report to, multiple okay",
+            configuration = "agent.console")
+    public List<URI> consoles = Lists.newArrayList();
 
     public Void call() throws Exception
     {
