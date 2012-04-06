@@ -11,8 +11,8 @@ import com.google.common.io.ByteStreams;
 import com.google.common.io.Files;
 import com.google.common.io.InputSupplier;
 import org.apache.commons.io.FileUtils;
-import org.skife.galaxy.agent.command.Command;
-import org.skife.galaxy.agent.command.CommandFailedException;
+import org.skife.galaxy.base.command.Command;
+import org.skife.galaxy.base.command.CommandFailedException;
 
 import java.io.BufferedReader;
 import java.io.File;

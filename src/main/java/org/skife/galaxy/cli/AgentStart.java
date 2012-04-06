@@ -9,15 +9,15 @@ import jnr.ffi.Library;
 import org.eclipse.jetty.server.DispatcherType;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.servlet.ServletContextHandler;
-import org.joda.time.Duration;
 import org.skife.cli.Command;
 import org.skife.cli.Option;
-import org.skife.galaxy.agent.command.DainDuration;
+import org.skife.galaxy.base.command.DainDuration;
 import org.skife.galaxy.agent.http.GuiceAgentListener;
 import org.skife.galaxy.http.NotFoundServlet;
 import org.skife.gressil.Daemon;
 
 import java.io.File;
+import java.net.InetSocketAddress;
 import java.net.URI;
 import java.util.Collections;
 import java.util.EnumSet;
@@ -44,6 +44,12 @@ public class AgentStart implements Callable<Void>
             description = "Port for HTTP server, default is 25365",
             configuration = "agent.port")
     public int port = 25365;
+
+    @Option(name = {"-H", "--host"},
+            title = "host",
+            description = "IP address to bind to, defaults to 0.0.0.0",
+            configuration = "agent.host")
+    public String host = "0.0.0.0";
 
     @Option(name = {"-p", "--pidfile"},
             title = "pidfile",
@@ -81,9 +87,9 @@ public class AgentStart implements Callable<Void>
                     .daemonize();
 
 
-        Server server = new Server(port);
+        Server server = new Server(InetSocketAddress.createUnresolved(host, port));
         ServletContextHandler handler = new ServletContextHandler(ServletContextHandler.NO_SESSIONS);
-        handler.addEventListener(new GuiceAgentListener(root,
+        handler.addEventListener(new GuiceAgentListener(host, port, root,
                                                         false,
                                                         ImmutableSet.copyOf(consoles),
                                                         DainDuration.valueOf(announcementInterval).toJodaDuration()));

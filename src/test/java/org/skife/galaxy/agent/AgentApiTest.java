@@ -13,12 +13,11 @@ import org.codehaus.jackson.map.ObjectMapper;
 import org.eclipse.jetty.server.DispatcherType;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.servlet.ServletContextHandler;
-import org.joda.time.Duration;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
-import org.skife.galaxy.agent.command.DainDuration;
+import org.skife.galaxy.base.command.DainDuration;
 import org.skife.galaxy.agent.http.GuiceAgentListener;
 import org.skife.galaxy.http.JsonMappingAsyncHandler;
 import org.skife.galaxy.http.NotFoundServlet;
@@ -58,7 +57,7 @@ public class AgentApiTest
     public static void setUp() throws Exception
     {
         ServletContextHandler handler = new ServletContextHandler(ServletContextHandler.NO_SESSIONS);
-        handler.addEventListener(new GuiceAgentListener(tmp, true, Collections.<URI>emptySet(), DainDuration.valueOf("1m").toJodaDuration()));
+        handler.addEventListener(new GuiceAgentListener("127.0.0.1", 25365, tmp, true, Collections.<URI>emptySet(), DainDuration.valueOf("1m").toJodaDuration()));
         handler.addFilter(com.google.inject.servlet.GuiceFilter.class, "/*", EnumSet.allOf(DispatcherType.class));
         handler.addServlet(NotFoundServlet.class, "/*");
         server.setHandler(handler);

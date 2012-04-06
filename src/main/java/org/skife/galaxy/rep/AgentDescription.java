@@ -8,6 +8,7 @@ import org.codehaus.jackson.annotate.JsonProperty;
 
 import java.io.File;
 import java.net.URI;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -29,7 +30,7 @@ public class AgentDescription
                             @JsonProperty("root") File root,
                             @JsonProperty("id") UUID id)
     {
-        this.slots = ImmutableList.copyOf(slots);
+        this.slots =  slots == null ? Collections.<SlotDescription>emptyList() : ImmutableList.copyOf(slots);
         this._actions = ImmutableList.copyOf(_actions);
         this._links = ImmutableList.copyOf(_links);
         this.environment = environment;

@@ -49,12 +49,13 @@ public class Main
                .withCommand(SlotStop.class);
 
         builder.withGroup("console")
-            .withDescription("Manage a console")
-            .withDefaultCommand(Help.class)
-            .withCommand(Help.class)
-            .withCommand(ConsoleStart.class)
-            .withCommand(ConsoleStop.class)
-            .withCommand(ConsoleRun.class);
+               .withDescription("Manage a console")
+               .withDefaultCommand(Help.class)
+               .withCommand(Help.class)
+               .withCommand(ConsoleStart.class)
+               .withCommand(ConsoleStop.class)
+               .withCommand(ConsoleRun.class)
+               .withCommand(ConsoleList.class);
 
         builder.build().parse(args).call();
     }

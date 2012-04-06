@@ -2,7 +2,8 @@ package org.skife.galaxy.console.http;
 
 import org.skife.galaxy.console.Console;
 import org.skife.galaxy.rep.AgentDescription;
-import org.skife.galaxy.rep.AgentRegistrationDescription;
+import org.skife.galaxy.rep.Link;
+import org.skife.galaxy.rep.ListOfLinks;
 import org.skife.galaxy.rep.ConsoleDescription;
 
 import javax.inject.Inject;
@@ -13,6 +14,10 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
+import java.net.URI;
+
+import static com.google.common.collect.Iterables.find;
+import static org.skife.galaxy.base.MorePredicates.beanPropertyEquals;
 
 @Path("/")
 public class ConsoleResource
@@ -38,13 +43,10 @@ public class ConsoleResource
     @POST
     @Produces(MediaType.APPLICATION_JSON)
     @Path("register-agent")
-    public Response registerAgent(AgentDescription agent)
+    public Response registerAgent(ListOfLinks links)
     {
-        console.register(agent);
-        return Response.created(ui.getBaseUriBuilder()
-                                  .path(ConsoleAgentResource.class)
-                                  .build(agent.getId()))
-                       .entity(AgentRegistrationDescription.from(agent, ui))
-                       .build();
+        Link agent = find(links.getLinks(), beanPropertyEquals("rel", "agent"));
+        console.register(agent.getUri());
+        return Response.ok().build();
     }
 }

@@ -1,4 +1,4 @@
-package org.skife.galaxy.agent.command;
+package org.skife.galaxy.base.command;
 
 public class CommandTimeoutException extends CommandFailedException
 {

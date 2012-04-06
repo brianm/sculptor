@@ -14,6 +14,7 @@ import org.skife.galaxy.http.NotFoundServlet;
 import org.skife.gressil.Daemon;
 
 import java.io.File;
+import java.net.InetSocketAddress;
 import java.util.EnumSet;
 import java.util.concurrent.Callable;
 
@@ -28,9 +29,16 @@ public class ConsoleStart implements Callable<Void>
 
     @Option(name = {"-P", "--port"},
             title = "port",
-            description = "Port for HTTP server, default is 25365",
+            description = "Port for HTTP server, default is 36525",
             configuration = "console.port")
-    public int port = 25365;
+    public int port = 36525;
+
+    @Option(name = {"-H", "--host"},
+            title = "host",
+            description = "IP address to bind to, defaults to 0.0.0.0",
+            configuration = "console.host")
+    public String host = "0.0.0.0";
+
 
     @Option(name = {"-p", "--pidfile"},
             title = "pidfile",
@@ -64,9 +72,9 @@ public class ConsoleStart implements Callable<Void>
                     .daemonize();
 
 
-        Server server = new Server(port);
+        Server server = new Server(InetSocketAddress.createUnresolved(host, port));
         ServletContextHandler handler = new ServletContextHandler(ServletContextHandler.NO_SESSIONS);
-        handler.addEventListener(new GuiceConsoleListener(root, false));
+        handler.addEventListener(new GuiceConsoleListener(root, false, host, port));
         handler.addFilter(com.google.inject.servlet.GuiceFilter.class, "/*", EnumSet.allOf(DispatcherType.class));
         handler.addServlet(NotFoundServlet.class, "/*");
         server.setHandler(handler);

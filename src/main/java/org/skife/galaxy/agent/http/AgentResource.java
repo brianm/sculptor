@@ -63,17 +63,20 @@ public class AgentResource
     @Path("index.json")
     public Response explicitJson()
     {
-        final URI authoritative = ui.getAbsolutePathBuilder().path(AgentResource.class, "explicitJson").build();
-        final URI deploy = ui.getAbsolutePathBuilder().path(AgentResource.class, "deploy").build();
+        final URI authoritative = ui.getBaseUriBuilder().path(AgentResource.class, "explicitJson").build();
+        final URI self = ui.getBaseUriBuilder().path(AgentResource.class).build();
+        final URI deploy = ui.getBaseUriBuilder().path(AgentResource.class, "deploy").build();
+
         final List<Action> acts = asList(new Action("deploy", "POST", deploy,
                                                     ImmutableMap.of("name", "Service name",
                                                                     "url", "Deployment bundle URL",
                                                                     "configuration", "Object where keys are paths inside deployment, and values are URLs to resources")));
-        final Link json_link = new Link("alternate", authoritative, "JSON URL");
+        final Link json_link = new Link("json", authoritative, "JSON URL");
+        final Link self_link = new Link("self", self, "Canonical URL");
 
         return Response.ok()
                        .header("Link", json_link.toString())
-                       .entity(new AgentDescription(asList(json_link),
+                       .entity(new AgentDescription(asList(self_link, json_link),
                                                     acts,
                                                     agent.getEnvironmentConfig(),
                                                     describe(agent.getSlots()),

@@ -14,12 +14,12 @@ import java.util.List;
 
 public class ConsoleDescription
 {
-    private final List<AgentDescription> agents;
+    private final List<ConsoleAgentDescription> agents;
     private final List<Link>             links;
     private       List<Action>           actions;
 
     @JsonCreator
-    public ConsoleDescription(@JsonProperty("agents") List<AgentDescription> agents,
+    public ConsoleDescription(@JsonProperty("agents") List<ConsoleAgentDescription> agents,
                               @JsonProperty("_links") List<Link> links,
                               @JsonProperty("_actions") List<Action> actions)
     {
@@ -31,7 +31,7 @@ public class ConsoleDescription
 
     public static ConsoleDescription createFrom(UriInfo ui, Console console)
     {
-        return new ConsoleDescription(console.getAgents(),
+        return new ConsoleDescription(decribe(ui, console.getAgents()),
                                       ImmutableList.of(new Link("self", ui.getBaseUriBuilder().build(), "console url")),
                                       ImmutableList.of(new Action("register-agent",
                                                                   "POST",
@@ -40,7 +40,15 @@ public class ConsoleDescription
                                                                     .build())));
     }
 
-    public List<AgentDescription> getAgents()
+    private static List<ConsoleAgentDescription> decribe(UriInfo ui, List<AgentDescription> agents) {
+        ImmutableList.Builder<ConsoleAgentDescription> builder = ImmutableList.builder();
+        for (AgentDescription agent : agents) {
+            builder.add(ConsoleAgentDescription.from(ui, agent, "running"));
+        }
+        return builder.build();
+    }
+
+    public List<ConsoleAgentDescription> getAgents()
     {
         return agents;
     }

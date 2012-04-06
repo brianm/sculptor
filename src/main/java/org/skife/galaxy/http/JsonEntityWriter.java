@@ -1,4 +1,4 @@
-package org.skife.galaxy.base;
+package org.skife.galaxy.http;
 
 import com.ning.http.client.Request;
 import org.codehaus.jackson.map.ObjectMapper;
@@ -16,7 +16,7 @@ public class JsonEntityWriter implements Request.EntityWriter
         this.entity = entity;
     }
 
-    public static JsonEntityWriter jsonWriter(Object entity)
+    public static JsonEntityWriter toJson(Object entity)
     {
         return new JsonEntityWriter(entity);
     }

@@ -12,6 +12,10 @@ public class JsonMappingAsyncHandler<T> extends AsyncCompletionHandler<T>
 
     private final Class<T> type;
 
+    public static <T> JsonMappingAsyncHandler<T> fromJson(Class<T> type) {
+        return new JsonMappingAsyncHandler<T>(type);
+    }
+
     public JsonMappingAsyncHandler(Class<T> type)
     {
         this.type = type;
