@@ -308,10 +308,10 @@ public class Slot
         return Status.success();
     }
 
-    public void clear() throws IOException
+    public void clear() throws IOException, InterruptedException
     {
         stop();
-        FileUtils.deleteDirectory(root);
+        new ProcessBuilder("rm", "-rf", root.getAbsolutePath()).start().waitFor();
     }
 
     public boolean isRunning()

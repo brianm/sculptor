@@ -109,7 +109,7 @@ public class Agent
         try {
             slots.get(slotId).clear();
         }
-        catch (IOException e) {
+        catch (Exception e) {
             log.warn("unable to clear slot" + slotId, e);
             throw Throwables.propagate(e);
         }
