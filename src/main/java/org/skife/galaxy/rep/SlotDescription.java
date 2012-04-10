@@ -117,6 +117,18 @@ public class SlotDescription
         return state;
     }
 
+    @JsonIgnore
+    public boolean isRunning()
+    {
+      return "running".equals(state);
+    }
+
+    @JsonIgnore
+    public boolean isStopped()
+    {
+        return !isRunning();
+    }
+
     public UUID getId()
     {
         return id;

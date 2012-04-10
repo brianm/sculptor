@@ -12,9 +12,9 @@
         <div class="span14">
             <table>
                 {{#slots}}
-                <tr class="{{#slot.running}}green-bg{{/slot.running}} {{#slot.stopped}}red-bg{{/slot.stopped}}">
-                    <td><a href="/slot/{{slot.id}}">{{slot.name}}</a></td>
-                    <td><a href="/slot/{{slot.id}}">{{slot.id}}</a></td>
+                <tr class="{{#running}}green-bg{{/running}} {{#stopped}}red-bg{{/stopped}}">
+                    <td><a href="/slot/{{id}}">{{id}}</a></td>
+                    <td><a href="/slot/{{id}}">{{name}}</a></td>
                 </tr>
                 {{/slots}}
             </table>

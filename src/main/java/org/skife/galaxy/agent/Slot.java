@@ -99,6 +99,7 @@ public class Slot
         }, tmp_tarball);
 
         File tmp = Files.createTempDir();
+        // TODO remove prefix path
         Command c = new Command("tar",
                                 "-C", tmp.getAbsolutePath(),
                                 "-xf", tmp_tarball.getAbsolutePath())

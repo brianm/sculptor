@@ -1,3 +1,4 @@
+*.m4
 install.sh
 src/test/java/org/skife/jdbi/v2/docs/TestArrayBinding.java
 target

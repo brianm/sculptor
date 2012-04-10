@@ -281,16 +281,6 @@ public class AgentApiTest
     @Ignore
     public void testRun() throws Exception
     {
-        _Action deploy = Iterables.find(http.prepareGet("http://localhost:25365/")
-                                            .setHeader("accept", MediaType.APPLICATION_JSON)
-                                            .execute(new JsonMappingAsyncHandler<_Root>(_Root.class)).get()._actions,
-                                        beanPropertyEquals("rel", "deploy"));
-        http.preparePost(deploy.uri)
-            .setHeader("content-type", MediaType.APPLICATION_JSON)
-            .setBody(mapper.writeValueAsString(new _Deployment()))
-            .execute()
-            .get();
-
         server.join();
     }
 

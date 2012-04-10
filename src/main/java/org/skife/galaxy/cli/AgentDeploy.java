@@ -35,7 +35,10 @@ import static org.skife.galaxy.http.JsonMappingAsyncHandler.fromJson;
 @Command(name = "deploy", description = "Deploy tarball to an agent")
 public class AgentDeploy implements Callable<Void>
 {
-    @Option(description = "Agent URL", name = {"-a", "--agent"}, title = "agent-url", configuration = "agent")
+    @Option(description = "Agent URL",
+            name = {"-a", "--agent"},
+            title = "agent-url",
+            configuration = "agent")
     public URI agentUri = URI.create("http://localhost:25365/");
 
     @Option(description = "Name for the deployed thing", name = {"-n", "--name"}, title = "Deployment name")
